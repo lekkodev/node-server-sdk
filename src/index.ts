@@ -18,13 +18,9 @@ async function initApiClient(options: ClientOptions): Promise<TransportClient> {
   return new TransportClient(options.repositoryOwner, options.repositoryName, transport);
 }
 
-async function initGrpcClient(
-  repositoryOwner: string,
-  repositoryName: string,
-  hostname: string,
-): Promise<TransportClient> {
-  const transport = await new ClientTransportBuilder(hostname, TransportProtocol.gRPC, "").build();
-  return new TransportClient(repositoryOwner, repositoryName, transport);
+async function initGrpcClient(options: ClientOptions): Promise<TransportClient> {
+  const transport = await new ClientTransportBuilder(options.hostname, TransportProtocol.gRPC, "").build();
+  return new TransportClient(options.repositoryOwner, options.repositoryName, transport);
 }
 
 export { initApiClient, initGrpcClient, ClientContext, TransportClient, Value };
