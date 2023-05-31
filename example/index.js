@@ -17,7 +17,7 @@ app.listen(port, async () => {
   )
 
   // Get a feature, replace "my_namespace", and "my_feature"
-  const stringFeature = await client.getBoolFeature("default", "example", new lekko.ClientContext().setString("my_context_key", "my_context_value"));
-  console.log(stringFeature);
+  const feature = await client.getBoolFeature("default", "example", new lekko.ClientContext().setString("my_context_key", "my_context_value"));
+  console.log(feature);
   process.exit();
 })
