@@ -14,29 +14,24 @@ import {
 } from '@buf/lekkodev_sdk.bufbuild_connect-es/lekko/client/v1beta1/configuration_service_connect';
 import { Transport, createPromiseClient } from "@bufbuild/connect";
 import { ClientContext } from './context';
-import { ClientTransportBuilder } from './transport-builder';
 import { Any } from '@bufbuild/protobuf';
 
 export class TransportClient {
   baseContext: ClientContext;
   client: any;
   repository: RepositoryKey;
-  transport: Transport;
 
   constructor(
     repositoryOwner: string,
     repositoryName: string,
-    transportBuilder: ClientTransportBuilder,
+    transport: Transport
   ) {
     this.baseContext = new ClientContext();
     this.repository = RepositoryKey.fromJson({
       'ownerName': repositoryOwner,
       'repoName': repositoryName,
     });
-    this.transport = transportBuilder.build();
-    if (this.transport) {
-      this.client = createPromiseClient(ConfigurationService, this.transport);
-    }
+    this.client = createPromiseClient(ConfigurationService, transport);
   }
 
   async getBoolFeature(namespace: string, key: string, ctx: ClientContext): Promise<boolean> {

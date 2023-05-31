@@ -1,7 +1,7 @@
 {
   "name": "@lekko/node-server-sdk",
   "type": "commonjs",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "description": "Lekko Node Server SDK",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -56,7 +56,9 @@
   "dependencies": {
     "@bufbuild/connect": "^0.8.5",
     "@bufbuild/connect-node": "^0.8.5",
+    "@bufbuild/connect-web": "^0.9.1",
     "@bufbuild/protobuf": "^1.2.0",
+    "browser-or-node": "^2.1.1",
     "esbuild": "^0.17.17"
   }
 }
