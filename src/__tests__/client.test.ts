@@ -14,26 +14,24 @@ import {
   GetStringValueResponse,
 } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
 
-test('build default client', () => {
+test('build default client', async () => {
   process.env.LEKKO_API_KEY = 'foobar';
-  const transport = (new ClientTransportBuilder('localhost:8080', TransportProtocol.HTTP, ""));
+  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
   const client = new TransportClient('lekkodev', 'config-test', transport);
   expect(client.client).not.toEqual(undefined);
-  expect(client.transport).not.toEqual(undefined);
 });
 
-test('build gRPC client', () => {
-  const transport = (new ClientTransportBuilder('localhost:8080', TransportProtocol.gRPC, ""));
+test('build gRPC client', async () => {
+  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.gRPC, "").build();
   const client = new TransportClient('lekkodev', 'config-test', transport);
   expect(client.client).not.toEqual(undefined);
-  expect(client.transport).not.toEqual(undefined);
 });
 
 const SAMPLE_CONTEXT = new ClientContext();
 SAMPLE_CONTEXT.setString('sample_key', 'sample_value');
 
 test('get bool feature', async () => {
-  const transport = (new ClientTransportBuilder('localhost:8080', TransportProtocol.HTTP, ""));
+  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
   const client = new TransportClient('lekkodev', 'config-test', transport);
   client.client.getBoolValue = jest.fn().mockReturnValue(GetBoolValueResponse.fromJson({
     value: true,
@@ -55,7 +53,7 @@ test('get bool feature', async () => {
 });
 
 test('get int feature', async () => {
-  const transport = (new ClientTransportBuilder('localhost:8080', TransportProtocol.HTTP, ""));
+  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
   const client = new TransportClient('lekkodev', 'config-test', transport);
   client.client.getIntValue = jest.fn().mockReturnValue(GetIntValueResponse.fromJson({
     value: 42,
@@ -77,7 +75,7 @@ test('get int feature', async () => {
 });
 
 test('get float feature', async () => {
-  const transport = (new ClientTransportBuilder('localhost:8080', TransportProtocol.HTTP, ""));
+  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
   const client = new TransportClient('lekkodev', 'config-test', transport);
   client.client.getFloatValue = jest.fn().mockReturnValue(GetFloatValueResponse.fromJson({
     value: 3.14,
@@ -99,7 +97,7 @@ test('get float feature', async () => {
 });
 
 test('get json feature', async () => {
-  const transport = (new ClientTransportBuilder('localhost:8080', TransportProtocol.HTTP, ""));
+  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
   const client = new TransportClient('lekkodev', 'config-test', transport);
   const mockedValue = {
     a: 1,
@@ -127,7 +125,7 @@ test('get json feature', async () => {
 });
 
 test('get string feature', async () => {
-  const transport = (new ClientTransportBuilder('localhost:8080', TransportProtocol.HTTP, ""));
+  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
   const client = new TransportClient('lekkodev', 'config-test', transport);
   client.client.getStringValue = jest.fn().mockReturnValue(GetStringValueResponse.fromJson({
     value: 'foobar',

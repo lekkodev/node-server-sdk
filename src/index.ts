@@ -3,22 +3,28 @@ import { ClientContext } from './context';
 import { TransportClient } from './client';
 import { ClientTransportBuilder, TransportProtocol } from './transport-builder';
 
-function initApiClient(
-  repositoryOwner: string,
-  repositoryName: string,
-  apiKey: string,
-): TransportClient {
-  const transport = (new ClientTransportBuilder("https://prod.api.lekko.dev", TransportProtocol.HTTP, apiKey));
-  return new TransportClient(repositoryOwner, repositoryName, transport);
+type ClientOptions = {
+  hostname: string
+  apiKey?: string
+  repositoryOwner: string
+  repositoryName: string
 }
 
-function createLekkoGRPCClient(
+async function initApiClient(options: ClientOptions): Promise<TransportClient> {
+  if (!options.apiKey) {
+    throw new Error("apiKey is required for API Client");
+  }
+  const transport = await new ClientTransportBuilder(options.hostname, TransportProtocol.HTTP, options.apiKey).build();
+  return new TransportClient(options.repositoryOwner, options.repositoryName, transport);
+}
+
+async function initGrpcClient(
   repositoryOwner: string,
   repositoryName: string,
   hostname: string,
-): TransportClient {
-  const transport = new ClientTransportBuilder(hostname, TransportProtocol.gRPC, "");
+): Promise<TransportClient> {
+  const transport = await new ClientTransportBuilder(hostname, TransportProtocol.gRPC, "").build();
   return new TransportClient(repositoryOwner, repositoryName, transport);
 }
 
-export { initApiClient, createLekkoGRPCClient, ClientContext, TransportClient, Value };
+export { initApiClient, initGrpcClient, ClientContext, TransportClient, Value };
