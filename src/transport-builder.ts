@@ -43,7 +43,7 @@ export class ClientTransportBuilder {
     if (this.protocol == TransportProtocol.gRPC) {
       if (isNode){
         const connectNode = await import("@bufbuild/connect-node");
-        return connectNode.createGrpcTransport({
+        return await connectNode.createGrpcTransport({
             baseUrl: this.hostname,
             httpVersion: '2',
           });
