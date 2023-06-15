@@ -13,7 +13,7 @@ import {
   GetStringValueResponse,
 } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
 
-test('build default client', async () => {
+test('build API client', async () => {
   const client = await initAPIClient({
     apiKey: "apiKey",
     repositoryOwner: "lekkodev",
@@ -21,6 +21,17 @@ test('build default client', async () => {
   });
   expect(client).not.toEqual(undefined);
 });
+
+test('build API client with hostname', async () => {
+  const client = await initAPIClient({
+    apiKey: "apiKey",
+    hostname: "http://testhostname.com",
+    repositoryOwner: "lekkodev",
+    repositoryName: "config-test"
+  });
+  expect(client).not.toEqual(undefined);
+});
+
 
 test('build gRPC client', async () => {
   const client = await initSidecarClient({
