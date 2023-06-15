@@ -1,6 +1,5 @@
 import { ClientContext } from '../context';
-import { TransportClient } from '../client';
-import { ClientTransportBuilder, TransportProtocol } from '../transport-builder';
+import { initAPIClient, initSidecarClient } from '../index';
 import {
   GetBoolValueRequest,
   GetBoolValueResponse,
@@ -15,24 +14,31 @@ import {
 } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
 
 test('build default client', async () => {
-  process.env.LEKKO_API_KEY = 'foobar';
-  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
-  const client = new TransportClient('lekkodev', 'config-test', transport);
-  expect(client.client).not.toEqual(undefined);
+  const client = await initAPIClient({
+    apiKey: "apiKey",
+    repositoryOwner: "lekkodev",
+    repositoryName: "config-test"
+  });
+  expect(client).not.toEqual(undefined);
 });
 
 test('build gRPC client', async () => {
-  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.gRPC, "").build();
-  const client = new TransportClient('lekkodev', 'config-test', transport);
-  expect(client.client).not.toEqual(undefined);
+  const client = await initSidecarClient({
+    repositoryOwner: "lekkodev", repositoryName: "config-test",
+    hostname: "localhost:8080"
+  });
+  expect(client).not.toEqual(undefined);
 });
 
 const SAMPLE_CONTEXT = new ClientContext();
 SAMPLE_CONTEXT.setString('sample_key', 'sample_value');
 
 test('get bool feature', async () => {
-  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
-  const client = new TransportClient('lekkodev', 'config-test', transport);
+  const client = await initAPIClient({
+    apiKey: "apiKey",
+    repositoryOwner: "lekkodev",
+    repositoryName: "config-test"
+  });
   client.client.getBoolValue = jest.fn().mockReturnValue(GetBoolValueResponse.fromJson({
     value: true,
   }));
@@ -53,8 +59,11 @@ test('get bool feature', async () => {
 });
 
 test('get int feature', async () => {
-  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
-  const client = new TransportClient('lekkodev', 'config-test', transport);
+  const client = await initAPIClient({
+    apiKey: "apiKey",
+    repositoryOwner: "lekkodev",
+    repositoryName: "config-test"
+  });
   client.client.getIntValue = jest.fn().mockReturnValue(GetIntValueResponse.fromJson({
     value: 42,
   }));
@@ -75,8 +84,11 @@ test('get int feature', async () => {
 });
 
 test('get float feature', async () => {
-  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
-  const client = new TransportClient('lekkodev', 'config-test', transport);
+  const client = await initAPIClient({
+    apiKey: "apiKey",
+    repositoryOwner: "lekkodev",
+    repositoryName: "config-test"
+  });
   client.client.getFloatValue = jest.fn().mockReturnValue(GetFloatValueResponse.fromJson({
     value: 3.14,
   }));
@@ -97,8 +109,11 @@ test('get float feature', async () => {
 });
 
 test('get json feature', async () => {
-  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
-  const client = new TransportClient('lekkodev', 'config-test', transport);
+  const client = await initAPIClient({
+    apiKey: "apiKey",
+    repositoryOwner: "lekkodev",
+    repositoryName: "config-test"
+  });
   const mockedValue = {
     a: 1,
     b: {
@@ -125,8 +140,11 @@ test('get json feature', async () => {
 });
 
 test('get string feature', async () => {
-  const transport = await new ClientTransportBuilder("localhost:8080", TransportProtocol.HTTP, "").build();
-  const client = new TransportClient('lekkodev', 'config-test', transport);
+  const client = await initAPIClient({
+    apiKey: "apiKey",
+    repositoryOwner: "lekkodev",
+    repositoryName: "config-test"
+  });
   client.client.getStringValue = jest.fn().mockReturnValue(GetStringValueResponse.fromJson({
     value: 'foobar',
   }));
