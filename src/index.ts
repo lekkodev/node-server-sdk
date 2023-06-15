@@ -5,6 +5,7 @@ import { ClientTransportBuilder, TransportProtocol } from './transport-builder';
 
 type APIOptions = {
   apiKey: string
+  hostname? : string
   repositoryOwner: string
   repositoryName: string
 }
@@ -12,7 +13,7 @@ type APIOptions = {
 async function initAPIClient(options: APIOptions): Promise<TransportClient> {
   const transport = await new ClientTransportBuilder(
     {
-      hostname: "https://prod.api.lekko.dev",
+      hostname: options.hostname || "https://prod.api.lekko.dev",
       protocol: TransportProtocol.HTTP,
       apiKey: options.apiKey
     }).build();

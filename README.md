@@ -2,7 +2,7 @@
 The Lekko Server SDK for Node.js
 
 ## Getting Started
-### Initializing a Lekko client in API provider mode
+### Initializing a Lekko client in Sidecar provider mode
 ```
 const client = await initSidecarClient({
     hostname: "http://localhost:50051",
@@ -11,7 +11,7 @@ const client = await initSidecarClient({
 });
 const stringFeature = await client.getStringFeature("my_namespace", "my_feature", new lekko.ClientContext().setString("my_context_key", "my_context_value"));
 ```
-### Initializing a Lekko client in Sidecar provider mode
+### Initializing a Lekko client in API provider mode
 ```
 const client = await lekko.initAPIClient(
     {
