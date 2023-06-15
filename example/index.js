@@ -1,23 +1,17 @@
-const express = require('express');
 const lekko = require('@lekko/node-server-sdk');
-const app = express();
-const port = 3000;
-
-app.listen(port, async () => {
-  console.log(`Example app listening on port ${port}`);
   
+async function getFeature() {
   // Initialize the client, replace "repo_owner", "repo_name" and "lekko_api_key"
-  const client = await lekko.initApiClient(
+  const client = await lekko.initAPIClient(
     {
-      hostname: "hostname",
-      apiKey: "lekko_apikey",
-      repositoryOwner: "repo_owner",
-      repositoryName: "repo_name"
+      apiKey: "<API_KEY>",
+      repositoryOwner: "<REPOSITORY_OWNER>",
+      repositoryName: "<REPOSITORY_NAME>"
     }
   )
-
+  
   // Get a feature, replace "my_namespace", and "my_feature"
-  const feature = await client.getBoolFeature("default", "example", new lekko.ClientContext().setString("my_context_key", "my_context_value"));
-  console.log(feature);
-  process.exit();
-})
+  return await client.getBoolFeature("default", "example", new lekko.ClientContext().setString("my_context_key", "my_context_value"));
+}
+
+getFeature().then(feature => console.log(feature))
