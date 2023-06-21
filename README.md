@@ -16,6 +16,16 @@ Yarn:
 yarn config set @buf:registry https://buf.build/gen/npm/v1
 ```
 
+Yarn v2:
+
+You must edit your `.yarnrc.yml` file to include the following scope:
+
+```
+npmScopes:
+  buf:
+    npmRegistryServer: https://buf.build/gen/npm/v1
+```
+
 ### Initializing a Lekko client in Sidecar provider mode
 ```
 const client = await initSidecarClient({
