@@ -1,24 +1,23 @@
 import {
-//  DeregisterRequest,
+  ConfigurationService,
+} from '@buf/lekkodev_sdk.bufbuild_connect-es/lekko/client/v1beta1/configuration_service_connect';
+import {
   GetBoolValueRequest,
-  GetIntValueRequest,
   GetFloatValueRequest,
+  GetIntValueRequest,
   GetJSONValueRequest,
   GetProtoValueRequest,
   GetStringValueRequest,
-//  RegisterRequest,
+  //  RegisterRequest,
   RepositoryKey
 } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
-import {
-  ConfigurationService,
-} from '@buf/lekkodev_sdk.bufbuild_connect-es/lekko/client/v1beta1/configuration_service_connect';
-import { Transport, createPromiseClient } from "@bufbuild/connect";
-import { ClientContext } from './context';
+import { PromiseClient, Transport, createPromiseClient } from "@bufbuild/connect";
 import { Any } from '@bufbuild/protobuf';
+import { ClientContext } from './context';
 
 export class TransportClient {
   baseContext: ClientContext;
-  client: any;
+  client: PromiseClient<typeof ConfigurationService>;
   repository: RepositoryKey;
 
   constructor(
@@ -59,7 +58,7 @@ export class TransportClient {
     req.repoKey = this.repository;
     Object.assign(req.context, this.baseContext.data, ctx.data);
     const res = await this.client.getIntValue(req);
-    return res.value;
+    return Number(res.value);
   }
 
   async getFloatFeature(namespace: string, key: string, ctx: ClientContext): Promise<number> {
@@ -88,7 +87,7 @@ export class TransportClient {
     Object.assign(req.context, this.baseContext.data, ctx.data);
     const res = await this.client.getJSONValue(req);
     try {
-      const decoded = Buffer.from(res.value, 'base64').toString();
+      const decoded = Buffer.from(res.value).toString();
       return JSON.parse(decoded);
     } catch (ex) {
       // Invalid encoding?
@@ -107,7 +106,15 @@ export class TransportClient {
     req.repoKey = this.repository;
     Object.assign(req.context, this.baseContext.data, ctx.data);
     const res = await this.client.getProtoValue(req);
-    return res.value;
+    if (res.valueV2 !== undefined) {
+      return new Any({
+        typeUrl: res.valueV2.typeUrl,
+        value: res.valueV2.value,
+      });
+    }
+    return new Any({
+      ...res.value
+    });
   }
 
   async getStringFeature(namespace: string, key: string, ctx: ClientContext): Promise<string> {
