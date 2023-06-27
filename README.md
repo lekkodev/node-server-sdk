@@ -61,7 +61,7 @@ const client = await lekko.initAPIClient({
     apiKey: <API_KEY>,
     repositoryOwner: <REPOSITORY_OWNER>,
     repositoryName: <REPOSITORY_NAME>,
-})
+});
 
 const context = new lekko.ClientContext().setString("my_context_key", "my_context_value")
 const boolFeature = await client.getBoolFeature("default", "example", context);
