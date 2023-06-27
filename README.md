@@ -80,7 +80,7 @@ Modern versions of Node also support ES (ECMAScript) modules, using the `import`
 
 ```javascript
 import * as lekko from "@lekko/node-server-sdk"; // or
-import { initAPIClient, initSideCarClient } from "@lekko/node-server-sdk";
+import { initAPIClient, initSidecarClient } from "@lekko/node-server-sdk";
 ```
 
 The SDK is packaged as a CommonJS module. To use it as an ES module like the above example, add the following to your `package.json`:
