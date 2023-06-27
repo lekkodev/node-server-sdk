@@ -87,9 +87,7 @@ The SDK is packaged as a CommonJS module. To use it as an ES module like the abo
 
 ```json
 {
-    ...
-    "type": "module",
-    ...
+  "type": "module"
 }
 ```
 
