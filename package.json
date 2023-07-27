@@ -48,11 +48,13 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@buf/lekkodev_sdk.bufbuild_connect-es": "^0.9.1-20230419225956-a6850760931c.1",
-    "@buf/lekkodev_sdk.bufbuild_es": "^1.2.1-20230620172853-31a82baf7ccf.1",
-    "@bufbuild/connect": "^0.9.1",
-    "@bufbuild/connect-node": "^0.8.5",
-    "@bufbuild/connect-web": "^0.9.1",
+    "@buf/lekkodev_cli.bufbuild_connect-es": "^0.12.0-20230725173132-dd46c8444719.1",
+    "@buf/lekkodev_cli.bufbuild_es": "^1.3.0-20230725173132-dd46c8444719.1",
+    "@buf/lekkodev_sdk.bufbuild_connect-es": "^0.12.0-20230620172853-31a82baf7ccf.1",
+    "@buf/lekkodev_sdk.bufbuild_es": "^1.3.0-20230620172853-31a82baf7ccf.1",
+    "@bufbuild/connect": "^0.12.0",
+    "@bufbuild/connect-node": "^0.12.0",
+    "@bufbuild/connect-web": "^0.12.0",
     "@bufbuild/protobuf": "^1.2.0",
     "browser-or-node": "^2.1.1",
     "esbuild": "^0.17.17"
