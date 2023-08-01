@@ -1,4 +1,4 @@
-import { Atom, ComparisonOperator } from "@buf/lekkodev_cli.bufbuild_es/lekko/rules/v1beta3/rules_pb";
+import { Atom, ComparisonOperator, Rule } from "@buf/lekkodev_cli.bufbuild_es/lekko/rules/v1beta3/rules_pb";
 import { ListValue, Value } from '@bufbuild/protobuf';
 
 export function atom(key: string, op: string, val: number | string | boolean | string[]) {
@@ -64,7 +64,16 @@ function value(v: number | string | boolean | string[]): Value {
     throw new Error('unsupported type for value');
 }
 
-
+export function rules(...atoms: Atom[]) : Rule[] {
+    return atoms.map((a) => {
+        return new Rule({
+            rule: {
+                case: 'atom',
+                value: a
+            }
+        });
+    });
+}
 
 
 
