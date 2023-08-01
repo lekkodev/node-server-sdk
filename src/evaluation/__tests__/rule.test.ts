@@ -36,47 +36,77 @@ function testBucket(ctxValue: string | number, isInt: boolean, namespace: string
     testRule(rule, clientCtx, namespace, configName, expected, hasError);
 }
 
-describe.skip('bucket ints', () => {
+describe('bucket ints', () => {
     // TODO: port all matching tests from go-sdk.
     testBucket(1, true, ns1, config1, false);
     testBucket(2, true, ns1, config1, false);
     testBucket(3, true, ns1, config1, true);
     testBucket(4, true, ns1, config1, false);
     testBucket(5, true, ns1, config1, true);
+    testBucket(101, true, ns1, config1, true);
+    testBucket(102, true, ns1, config1, true);
+    testBucket(103, true, ns1, config1, false);
+    testBucket(104, true, ns1, config1, false);
+    testBucket(105, true, ns1, config1, true);
 
     testBucket(1, true, ns2, config2, false);
     testBucket(2, true, ns2, config2, true);
     testBucket(3, true, ns2, config2, false);
     testBucket(4, true, ns2, config2, false);
     testBucket(5, true, ns2, config2, true);
+    testBucket(101, true, ns2, config2, true);
+    testBucket(102, true, ns2, config2, true);
+    testBucket(103, true, ns2, config2, false);
+    testBucket(104, true, ns2, config2, true);
+    testBucket(105, true, ns2, config2, true);
 });
 
-describe.skip('bucket doubles', () => {
+describe('bucket doubles', () => {
     testBucket(3.1415, false, ns1, config1, false);
     testBucket(2.7182, false, ns1, config1, false);
     testBucket(1.6180, false, ns1, config1, true);
     testBucket(6.6261, false, ns1, config1, true);
     testBucket(6.0221, false, ns1, config1, false);
+    testBucket(2.9979, false, ns1, config1, true);
+    testBucket(6.6730, false, ns1, config1, false);
+    testBucket(1.3807, false, ns1, config1, true);
+    testBucket(1.4142, false, ns1, config1, true);
+    testBucket(2.0000, false, ns1, config1, false);
 
     testBucket(3.1415, false, ns2, config2, true);
     testBucket(2.7182, false, ns2, config2, false);
     testBucket(1.6180, false, ns2, config2, true);
     testBucket(6.6261, false, ns2, config2, false);
     testBucket(6.0221, false, ns2, config2, false);
+    testBucket(2.9979, false, ns2, config2, false);
+    testBucket(6.6730, false, ns2, config2, false);
+    testBucket(1.3807, false, ns2, config2, false);
+    testBucket(1.4142, false, ns2, config2, true);
+    testBucket(2.0000, false, ns2, config2, false);
 });
 
-describe.skip('bucket strings', () => {
+describe('bucket strings', () => {
     testBucket('hello', false, ns1, config1, false);
     testBucket('world', false, ns1, config1, false);
     testBucket('i', false, ns1, config1, true);
     testBucket('am', false, ns1, config1, true);
     testBucket('a', false, ns1, config1, true);
+    testBucket('unit', false, ns1, config1, false);
+    testBucket('test', false, ns1, config1, true);
+    testBucket('case', false, ns1, config1, true);
+    testBucket('for', false, ns1, config1, false);
+    testBucket('bucket', false, ns1, config1, false);
 
     testBucket('hello', false, ns2, config2, true);
     testBucket('world', false, ns2, config2, false);
     testBucket('i', false, ns2, config2, true);
     testBucket('am', false, ns2, config2, true);
     testBucket('a', false, ns2, config2, true);
+    testBucket('unit', false, ns2, config2, false);
+    testBucket('test', false, ns2, config2, true);
+    testBucket('case', false, ns2, config2, false);
+    testBucket('for', false, ns2, config2, false);
+    testBucket('bucket', false, ns2, config2, false);
 });
 
 
@@ -150,8 +180,34 @@ describe('empty rule', () => {
     testRule(undefined, new ClientContext, ns1, config1, undefined, true);
 });
 
+describe('unknown comparison op', () => {
+    const a = atom('age', '???', 10);
+    const rule = new Rule({
+        rule: {
+            case: 'atom',
+            value: a,
+        }
+    });
+    testRule(rule, new ClientContext().setInt('age', 10), ns1, config1, undefined, true);
+});
+
 describe('test equality', () => {
     const atomTests: atomTest[] = [
+        {
+            atom: atom('isprod', '==', true),
+            context: new ClientContext().setBoolean('isprod', true),
+            expected: true,
+        },
+        {
+            atom: atom('isprod', '==', true),
+            context: new ClientContext().setBoolean('isprod', false),
+            expected: false,
+        },
+        {
+            atom: atom('isprod', '==', true),
+            context: new ClientContext().setString('isprod', 'not a bool'),
+            hasError: true,
+        },
         {
             atom: atom('age', '==', 12),
             context: new ClientContext().setInt('age', 12),

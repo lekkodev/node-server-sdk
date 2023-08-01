@@ -4,8 +4,6 @@ import { Value } from '@bufbuild/protobuf';
 import { XXHash32 } from 'xxhash-addon';
 import { ClientContext } from '../context/context';
 
-const n256 = BigInt(256);
-
 export default function evaluateRule(rule: Rule | undefined, context: ClientContext, namespace: string, configName: string): boolean {
     if (!rule) {
         throw new Error('empty rule');
@@ -91,40 +89,25 @@ function evaluateBucket(bucketF: CallExpression_Bucket, context: ClientContext, 
         bytesBuffer = Buffer.from(value.kind.value);
         break;
     case 'intValue': {
-        const result = new Uint8Array();
-        let i = 0;
-        let bignumber = value.kind.value;
-        while (bignumber > 0) {
-            result[i] = Number(bignumber % n256);
-            bignumber = bignumber / n256;
-            i += 1;
-        }
-        bytesBuffer = Buffer.from(result.reverse());
+        bytesBuffer = Buffer.alloc(8);
+        bytesBuffer.writeBigInt64BE(value.kind.value);
         break;
     }
     case 'doubleValue': {
-        const result = new Uint8Array();
-        let i = 0;
-        let num = value.kind.value;
-        while (num > 0) {
-            result[i] = num % 256;
-            num = num / 256;
-            i += 1;
-        }
-        bytesBuffer = Buffer.from(result.reverse());
+        bytesBuffer = Buffer.alloc(8);
+        bytesBuffer.writeDoubleBE(value.kind.value);
         break;
     }
     default: throw new Error('unsupported value type for bucket');
     }
     const bytesFrags: Buffer[] = [
+        Buffer.from(namespace),
         Buffer.from(configName),
         Buffer.from(ctxKey),
         bytesBuffer
     ];
-    const hasher32 = new XXHash32(Buffer.from(namespace));
-    bytesFrags.forEach((frag) => hasher32.update(frag));
-    const hashed = hasher32.digest().readInt32BE();
-    return hashed % 100000 <= bucketF.threshold;
+    const result = XXHash32.hash(Buffer.concat(bytesFrags));
+    return result.readUInt32BE() % 100000 <= bucketF.threshold;
 }
 
 function evaluateEquals(ruleVal: Value | undefined, ctxVal: LekkoValue) : boolean {
