@@ -1,6 +1,6 @@
 import { Value } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
-import { ClientContext } from './context';
 import { TransportClient } from './client';
+import { ClientContext } from './context/context';
 import { ClientTransportBuilder, TransportProtocol } from './transport-builder';
 
 type APIOptions = {
@@ -35,4 +35,5 @@ async function initSidecarClient(options: SidecarOptions): Promise<TransportClie
   return new TransportClient(options.repositoryOwner, options.repositoryName, transport);
 }
 
-export { initAPIClient, initSidecarClient, ClientContext, TransportClient, Value };
+export { ClientContext, TransportClient, Value, initAPIClient, initSidecarClient };
+

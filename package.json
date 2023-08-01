@@ -57,6 +57,7 @@
     "@bufbuild/connect-web": "^0.12.0",
     "@bufbuild/protobuf": "^1.2.0",
     "browser-or-node": "^2.1.1",
-    "esbuild": "^0.17.17"
+    "esbuild": "^0.17.17",
+    "xxhash-addon": "^2.0.1"
   }
 }

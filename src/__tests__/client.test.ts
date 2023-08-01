@@ -14,7 +14,7 @@ import {
   Any as LekkoAny,
 } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
 import { Any, BoolValue } from '@bufbuild/protobuf';
-import { ClientContext } from '../context';
+import { ClientContext } from '../context/context';
 import { initAPIClient, initSidecarClient } from '../index';
 
 test('build API client', async () => {

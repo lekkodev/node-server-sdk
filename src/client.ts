@@ -13,7 +13,7 @@ import {
 } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
 import { PromiseClient, Transport, createPromiseClient } from "@bufbuild/connect";
 import { Any } from '@bufbuild/protobuf';
-import { ClientContext } from './context';
+import { ClientContext } from './context/context';
 
 export class TransportClient {
   baseContext: ClientContext;
