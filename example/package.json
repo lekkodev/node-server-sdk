@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@lekko/node-server-sdk": "^0.0.8"
+    "commander": "^11.0.0"
   }
 }

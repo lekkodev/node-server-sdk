@@ -14,8 +14,9 @@ import {
 import { PromiseClient, Transport, createPromiseClient } from "@bufbuild/connect";
 import { Any } from '@bufbuild/protobuf';
 import { ClientContext } from './context/context';
+import { Client } from './types/client';
 
-export class TransportClient {
+export class TransportClient implements Client {
   baseContext: ClientContext;
   client: PromiseClient<typeof ConfigurationService>;
   repository: RepositoryKey;
@@ -31,6 +32,10 @@ export class TransportClient {
       'repoName': repositoryName,
     });
     this.client = createPromiseClient(ConfigurationService, transport);
+  }
+
+  async close(): Promise<void> {
+    return;
   }
 
   async getBoolFeature(namespace: string, key: string, ctx: ClientContext): Promise<boolean> {
