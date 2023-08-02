@@ -40,6 +40,14 @@ class ClientContext {
     });
     return this;
   }
+
+  toString(): string {
+    const pairs: string[] = [];
+    for (const k in this.data) {
+      pairs.push(`${k}: ${this.data[k].kind.value}`);
+    }
+    return pairs.join(', ');
+  }
 }
 
 export { ClientContext };
