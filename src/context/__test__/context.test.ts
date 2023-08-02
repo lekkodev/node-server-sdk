@@ -1,5 +1,5 @@
 import { Value } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
-import { ClientContext } from '../context/context';
+import { ClientContext } from '../context';
 
 test('empty constructor', () => {
   const ctx = new ClientContext();

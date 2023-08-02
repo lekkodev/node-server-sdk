@@ -8,15 +8,25 @@ const ns2 = 'ns_2';
 const config1 = 'feature_1';
 const config2 = 'feature_2';
 
-function testBucket(ctxValue: string | number, isInt: boolean, namespace: string, configName: string, expected?: boolean, hasError?: boolean) {
+type testBucketParams = {
+    ctxValue: string | number
+    isInt: boolean
+    namespace: string
+    configName: string
+    expected?: boolean
+    hasError?: boolean
+}
+
+// function testBucket(ctxValue: string | number, isInt: boolean, namespace: string, configName: string, expected?: boolean, hasError?: boolean) {
+function testBucket(params: testBucketParams) {
     const ctxKey = 'key';
     const clientCtx = new ClientContext();
-    if (typeof(ctxValue) == 'string') {
-        clientCtx.setString(ctxKey, ctxValue);
-    } else if (isInt) {
-        clientCtx.setInt(ctxKey, ctxValue);
+    if (typeof(params.ctxValue) == 'string') {
+        clientCtx.setString(ctxKey, params.ctxValue);
+    } else if (params.isInt) {
+        clientCtx.setInt(ctxKey, params.ctxValue);
     } else {
-        clientCtx.setDouble(ctxKey, ctxValue);
+        clientCtx.setDouble(ctxKey, params.ctxValue);
     }
     const rule = new Rule({
         rule: {
@@ -33,80 +43,142 @@ function testBucket(ctxValue: string | number, isInt: boolean, namespace: string
         }
     });
 
-    testRule(rule, clientCtx, namespace, configName, expected, hasError);
+    testRule(rule, clientCtx, params.namespace, params.configName, params.expected, params.hasError);
 }
 
 describe('bucket ints', () => {
-    // TODO: port all matching tests from go-sdk.
-    testBucket(1, true, ns1, config1, false);
-    testBucket(2, true, ns1, config1, false);
-    testBucket(3, true, ns1, config1, true);
-    testBucket(4, true, ns1, config1, false);
-    testBucket(5, true, ns1, config1, true);
-    testBucket(101, true, ns1, config1, true);
-    testBucket(102, true, ns1, config1, true);
-    testBucket(103, true, ns1, config1, false);
-    testBucket(104, true, ns1, config1, false);
-    testBucket(105, true, ns1, config1, true);
-
-    testBucket(1, true, ns2, config2, false);
-    testBucket(2, true, ns2, config2, true);
-    testBucket(3, true, ns2, config2, false);
-    testBucket(4, true, ns2, config2, false);
-    testBucket(5, true, ns2, config2, true);
-    testBucket(101, true, ns2, config2, true);
-    testBucket(102, true, ns2, config2, true);
-    testBucket(103, true, ns2, config2, false);
-    testBucket(104, true, ns2, config2, true);
-    testBucket(105, true, ns2, config2, true);
+    const tcs1: [number, boolean][] = [
+        [1, false], 
+        [2, false],
+        [3, true],
+        [4, false],
+        [5, true],
+        [101, true],
+        [102, true],
+        [103, false],
+        [104, false],
+        [105, true],
+    ];
+    for (const [ctxValue, expected] of tcs1) {
+        testBucket({
+            ctxValue,
+            isInt: true,
+            namespace: ns1,
+            configName: config1,
+            expected
+        });
+    }
+    const tcs2: [number, boolean][] = [
+        [1, false], 
+        [2, true],
+        [3, false],
+        [4, false],
+        [5, true],
+        [101, true],
+        [102, true],
+        [103, false],
+        [104, true],
+        [105, true],
+    ];
+    for (const [ctxValue, expected] of tcs2) {
+        testBucket({
+            ctxValue,
+            isInt: true,
+            namespace: ns2,
+            configName: config2,
+            expected
+        });
+    }
 });
 
 describe('bucket doubles', () => {
-    testBucket(3.1415, false, ns1, config1, false);
-    testBucket(2.7182, false, ns1, config1, false);
-    testBucket(1.6180, false, ns1, config1, true);
-    testBucket(6.6261, false, ns1, config1, true);
-    testBucket(6.0221, false, ns1, config1, false);
-    testBucket(2.9979, false, ns1, config1, true);
-    testBucket(6.6730, false, ns1, config1, false);
-    testBucket(1.3807, false, ns1, config1, true);
-    testBucket(1.4142, false, ns1, config1, true);
-    testBucket(2.0000, false, ns1, config1, false);
-
-    testBucket(3.1415, false, ns2, config2, true);
-    testBucket(2.7182, false, ns2, config2, false);
-    testBucket(1.6180, false, ns2, config2, true);
-    testBucket(6.6261, false, ns2, config2, false);
-    testBucket(6.0221, false, ns2, config2, false);
-    testBucket(2.9979, false, ns2, config2, false);
-    testBucket(6.6730, false, ns2, config2, false);
-    testBucket(1.3807, false, ns2, config2, false);
-    testBucket(1.4142, false, ns2, config2, true);
-    testBucket(2.0000, false, ns2, config2, false);
+    const tcs1: [number, boolean][] = [
+        [3.1415, false],
+        [2.7182, false],
+        [1.6180, true],
+        [6.6261, true],
+        [6.0221, false],
+        [2.9979, true],
+        [6.6730, false],
+        [1.3807, true],
+        [1.4142, true],
+        [2.0000, false]
+    ];
+    for (const [ctxValue, expected] of tcs1) {
+        testBucket({
+            ctxValue,
+            isInt: false,
+            namespace: ns1,
+            configName: config1,
+            expected
+        });
+    }
+    const tcs2: [number, boolean][] = [
+        [3.1415, true],
+        [2.7182, false],
+        [1.6180, true],
+        [6.6261, false],
+        [6.0221, false],
+        [2.9979, false],
+        [6.6730, false],
+        [1.3807, false],
+        [1.4142, true],
+        [2.0000, false],
+    ];
+    for (const [ctxValue, expected] of tcs2) {
+        testBucket({
+            ctxValue,
+            isInt: false,
+            namespace: ns2,
+            configName: config2,
+            expected
+        });
+    }
 });
 
 describe('bucket strings', () => {
-    testBucket('hello', false, ns1, config1, false);
-    testBucket('world', false, ns1, config1, false);
-    testBucket('i', false, ns1, config1, true);
-    testBucket('am', false, ns1, config1, true);
-    testBucket('a', false, ns1, config1, true);
-    testBucket('unit', false, ns1, config1, false);
-    testBucket('test', false, ns1, config1, true);
-    testBucket('case', false, ns1, config1, true);
-    testBucket('for', false, ns1, config1, false);
-    testBucket('bucket', false, ns1, config1, false);
-
-    testBucket('hello', false, ns2, config2, true);
-    testBucket('world', false, ns2, config2, false);
-    testBucket('i', false, ns2, config2, true);
-    testBucket('am', false, ns2, config2, true);
-    testBucket('a', false, ns2, config2, true);
-    testBucket('unit', false, ns2, config2, false);
-    testBucket('test', false, ns2, config2, true);
-    testBucket('case', false, ns2, config2, false);
-    testBucket('for', false, ns2, config2, false);
-    testBucket('bucket', false, ns2, config2, false);
+    const tcs1: [string, boolean][] = [
+        ['hello', false],
+        ['world', false],
+        ['i', true],
+        ['am', true],
+        ['a', true],
+        ['unit', false],
+        ['test', true],
+        ['case', true],
+        ['for', false],
+        ['bucket', false],
+    ];
+    for (const [ctxValue, expected] of tcs1) {
+        testBucket({
+            ctxValue,
+            isInt: false,
+            namespace: ns1,
+            configName: config1,
+            expected
+        });
+    }
+    const tcs2: [string, boolean][] = [
+        ['hello', true],
+        ['world', false],
+        ['i', true],
+        ['am', true],
+        ['a', true],
+        ['unit', false],
+        ['test', true],
+        ['case', false],
+        ['for', false],
+        ['bucket', false],
+    ];
+    for (const [ctxValue, expected] of tcs2) {
+        testBucket({
+            ctxValue,
+            isInt: false,
+            namespace: ns2,
+            configName: config2,
+            expected
+        });
+    }
 });
 
 

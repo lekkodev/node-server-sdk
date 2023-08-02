@@ -185,9 +185,7 @@ function evaluateContainedWithin(ruleVal: Value | undefined, ctxVal: LekkoValue)
     }
     switch (ruleVal.kind.case) {
     case 'listValue':
-        return ruleVal.kind.value.values.find((listElemVal) => {
-            return evaluateEquals(listElemVal, ctxVal);
-        }) !== undefined;
+        return ruleVal.kind.value.values.some((listElemVal) => evaluateEquals(listElemVal, ctxVal));
     default: throw new Error('type mismatch: expecting list for operator contained within');
     }
 }
