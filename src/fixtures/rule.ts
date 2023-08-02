@@ -65,13 +65,15 @@ function value(v: number | string | boolean | string[]): Value {
 }
 
 export function rules(...atoms: Atom[]) : Rule[] {
-    return atoms.map((a) => {
-        return new Rule({
-            rule: {
-                case: 'atom',
-                value: a
-            }
-        });
+    return atoms.map((a) => rule(a));
+}
+
+export function rule(a: Atom) : Rule {
+    return new Rule({
+        rule: {
+            case: 'atom',
+            value: a
+        }
     });
 }
 

@@ -1,7 +1,7 @@
 import { Atom, CallExpression, CallExpression_Bucket, ComparisonOperator, LogicalExpression, LogicalOperator, Rule } from '@buf/lekkodev_cli.bufbuild_es/lekko/rules/v1beta3/rules_pb';
 import { ClientContext } from '../../context/context';
 import evaluateRule from '../rule';
-import { atom, rules } from '../rule_fixtures';
+import { atom, rules } from '../../fixtures/rule';
 
 const ns1 = 'ns_1';
 const ns2 = 'ns_2';
