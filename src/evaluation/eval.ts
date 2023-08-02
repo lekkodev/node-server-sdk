@@ -4,7 +4,7 @@ import { ClientContext } from '../context/context';
 import evaluateRule from './rule';
 
 type EvaluationResult = {
-    value?: Any
+    value: Any
     // Stores the path of the tree node that returned the final value
     // after successful evaluation.
     path: number[]
@@ -79,14 +79,17 @@ function traverse(override: Constraint | undefined, namespace: string, configNam
     };
 }
 
-function getValue(val: Any | undefined, valNew: LekkoAny | undefined) : Any | undefined {
+function getValue(val: Any | undefined, valNew: LekkoAny | undefined) : Any {
     if (valNew) {
         return new Any({
             typeUrl: valNew.typeUrl,
             value: valNew.value
         });
     }
-    return val;
+    if (val) {
+        return val;
+    }
+    throw new Error('config value not found');
 }
 
 
