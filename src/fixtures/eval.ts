@@ -4,6 +4,8 @@ import { Any, Int64Value } from '@bufbuild/protobuf';
 
 export const configKey = 'key';
 export const configDescription = 'config description';
+export const defaultValue = 1;
+export const constraintValue = 2;
 
 export function config(tree: Tree): Feature {
     return new Feature({
@@ -15,7 +17,7 @@ export function config(tree: Tree): Feature {
 }
 
 export function tree(...constraints: Constraint[]): Tree {
-    const defaultAny = anyInt(1); // default always 1
+    const defaultAny = anyInt(defaultValue); // default always 1
     return new Tree({
         default: defaultAny,
         defaultNew: new LekkoAny({
@@ -27,7 +29,7 @@ export function tree(...constraints: Constraint[]): Tree {
 }
 
 export function constriant(rule: Rule, ...constraints: Constraint[]): Constraint {
-    const valueAny = anyInt(2); // constraint always 2
+    const valueAny = anyInt(constraintValue); // constraint always 2
     return new Constraint({
         ruleAstNew: rule,
         value: valueAny,

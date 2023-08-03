@@ -22,11 +22,9 @@ export function evaluate(config: Feature, namespace: string, context: ClientCont
         const childResult = traverse(config.tree.constraints[i], namespace, config.key, context);
         if (childResult.passes) {
             if (childResult.value) {
-                const path = childResult.path;
-                path.unshift(i);
                 return {
                     value: childResult.value,
-                    path
+                    path: [i, ...childResult.path]
                 };
             }
             break;
@@ -60,12 +58,10 @@ function traverse(override: Constraint | undefined, namespace: string, configNam
         if (childResult.passes) {
             // We may stop iterating. But first, remember the traversed value if it exists.
             if (childResult.value) {
-                const path = childResult.path;
-                path.unshift(i);
                 return {
                     value: childResult.value,
                     passes: true,
-                    path
+                    path: [i, ...childResult.path]
                 };
             }
             break;

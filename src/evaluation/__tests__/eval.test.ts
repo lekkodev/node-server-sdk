@@ -1,7 +1,7 @@
 import { Feature } from '@buf/lekkodev_cli.bufbuild_es/lekko/feature/v1beta1/feature_pb';
 import { Int64Value, createRegistry } from '@bufbuild/protobuf';
 import { ClientContext } from '../../context/context';
-import { config, constriant, tree } from '../../fixtures/eval';
+import { config, constraintValue, constriant, defaultValue, tree } from '../../fixtures/eval';
 import { atom, rule } from '../../fixtures/rule';
 import { evaluate } from '../eval';
 
@@ -33,6 +33,8 @@ function testEval(params: testEvalParams) {
             expect(resultAny.value?.unpackTo(resultWrapper)).toBeTruthy();
             expect(resultWrapper.value).toBe(BigInt(params.expected));
             expect(resultAny.path).toStrictEqual(params.expectedPath);
+        } else {
+            throw new Error('test case needs to either expect an error or a result');
         }
     });
 }
@@ -41,13 +43,13 @@ describe('no overrides traversal', () => {
     testEval({
         config: config(tree()),
         context: new ClientContext(),
-        expected: 1,
+        expected: defaultValue,
         expectedPath: []
     });
     testEval({
         config: config(tree()),
         context: new ClientContext().setString('key', 'anything'),
-        expected: 1,
+        expected: defaultValue,
         expectedPath: []
     });
 });
@@ -57,25 +59,25 @@ describe('1 level traversal', () => {
     testEval({
         config: cfg,
         context: new ClientContext(),
-        expected: 1,
+        expected: defaultValue,
         expectedPath: []
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 5),
-        expected: 1,
+        expected: defaultValue,
         expectedPath: []
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 10),
-        expected: 2,
+        expected: constraintValue,
         expectedPath: [0]
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 12),
-        expected: 2,
+        expected: constraintValue,
         expectedPath: [1]
     });
 });
@@ -96,55 +98,55 @@ describe('2 level traversal', () => {
     testEval({
         config: cfg,
         context: new ClientContext(),
-        expected: 1,
+        expected: defaultValue,
         expectedPath: []
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 10),
-        expected: 2,
+        expected: constraintValue,
         expectedPath: [0]
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 10).setString('city', 'Rome'),
-        expected: 2,
+        expected: constraintValue,
         expectedPath: [0, 0]
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 10).setString('city', 'Paris'),
-        expected: 2,
+        expected: constraintValue,
         expectedPath: [0, 1]
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 12).setString('city', 'Milan'),
-        expected: 2,
+        expected: constraintValue,
         expectedPath: [1]
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 12),
-        expected: 2,
+        expected: constraintValue,
         expectedPath: [1]
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 12).setString('city', 'Rome'),
-        expected: 2,
+        expected: constraintValue,
         expectedPath: [1, 0]
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 12).setString('city', 'Paris'),
-        expected: 2,
+        expected: constraintValue,
         expectedPath: [1, 1]
     });
     testEval({
         config: cfg,
         context: new ClientContext().setInt('age', 12).setString('city', 'Milan'),
-        expected: 2,
+        expected: constraintValue,
         expectedPath: [1]
     });
 });
