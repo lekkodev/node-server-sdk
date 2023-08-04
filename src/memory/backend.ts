@@ -60,7 +60,7 @@ export class Backend implements Client {
         return JSON.parse(wrapper.toJsonString());
     }
     async getProtoFeature(namespace: string, key: string, ctx: ClientContext): Promise<Any> {
-        const result = await this.store.evaluateType(namespace, key, ctx);
+        const result = this.store.evaluateType(namespace, key, ctx);
         return result.evalResult.value;
     }
 
@@ -70,7 +70,7 @@ export class Backend implements Client {
         ctx: ClientContext, 
         wrapper: BoolValue | StringValue | Int64Value | DoubleValue | Value,
     ) {
-        const result = await this.store.evaluateType(namespace, configKey, ctx);
+        const result = this.store.evaluateType(namespace, configKey, ctx);
         if (!result.evalResult.value.unpackTo(wrapper)) {
             throw new Error('type mismatch');
         }
@@ -120,7 +120,7 @@ export class Backend implements Client {
             repoKey: this.repoKey,
             sessionKey: this.sessionKey
         });
-        const currentSha = await this.store.getCommitSHA();
+        const currentSha = this.store.getCommitSHA();
         return currentSha != versionResponse.commitSha;
     }
 
