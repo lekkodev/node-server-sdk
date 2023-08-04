@@ -1,7 +1,7 @@
 import { CallExpression_Bucket, ComparisonOperator, LogicalOperator, Rule } from '@buf/lekkodev_cli.bufbuild_es/lekko/rules/v1beta3/rules_pb';
 import { Value as LekkoValue } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
 import { Value } from '@bufbuild/protobuf';
-import { XXHash32 } from 'xxhash-addon';
+import { h32 } from 'xxhashjs';
 import { ClientContext } from '../context/context';
 
 export default function evaluateRule(rule: Rule | undefined, context: ClientContext, namespace: string, configName: string): boolean {
@@ -106,8 +106,8 @@ function evaluateBucket(bucketF: CallExpression_Bucket, context: ClientContext, 
         Buffer.from(ctxKey),
         bytesBuffer
     ];
-    const result = XXHash32.hash(Buffer.concat(bytesFrags));
-    return result.readUInt32BE() % 100000 <= bucketF.threshold;
+    const result = h32(Buffer.concat(bytesFrags), 0);
+    return result.toNumber() % 100000 <= bucketF.threshold;
 }
 
 function evaluateEquals(ruleVal: Value | undefined, ctxVal: LekkoValue) : boolean {

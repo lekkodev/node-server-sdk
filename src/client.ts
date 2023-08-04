@@ -14,8 +14,9 @@ import {
 import { PromiseClient, Transport, createPromiseClient } from "@bufbuild/connect";
 import { Any } from '@bufbuild/protobuf';
 import { ClientContext } from './context/context';
+import { Client } from './types/client';
 
-export class TransportClient {
+export class TransportClient implements Client {
   baseContext: ClientContext;
   client: PromiseClient<typeof ConfigurationService>;
   repository: RepositoryKey;
@@ -33,6 +34,10 @@ export class TransportClient {
     this.client = createPromiseClient(ConfigurationService, transport);
   }
 
+  async close(): Promise<void> {
+    return;
+  }
+
   async getBoolFeature(namespace: string, key: string, ctx: ClientContext): Promise<boolean> {
     if (!ctx) {
       ctx = new ClientContext();
@@ -47,7 +52,7 @@ export class TransportClient {
     return res.value;
   }
 
-  async getIntFeature(namespace: string, key: string, ctx: ClientContext): Promise<number> {
+  async getIntFeature(namespace: string, key: string, ctx: ClientContext): Promise<bigint> {
     if (!ctx) {
       ctx = new ClientContext();
     }
@@ -58,7 +63,7 @@ export class TransportClient {
     req.repoKey = this.repository;
     Object.assign(req.context, this.baseContext.data, ctx.data);
     const res = await this.client.getIntValue(req);
-    return Number(res.value);
+    return res.value;
   }
 
   async getFloatFeature(namespace: string, key: string, ctx: ClientContext): Promise<number> {

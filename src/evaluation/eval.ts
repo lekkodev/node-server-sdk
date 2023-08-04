@@ -3,7 +3,7 @@ import { Any } from '@bufbuild/protobuf';
 import { ClientContext } from '../context/context';
 import evaluateRule from './rule';
 
-type EvaluationResult = {
+export type EvaluationResult = {
     value: Any
     // Stores the path of the tree node that returned the final value
     // after successful evaluation.
