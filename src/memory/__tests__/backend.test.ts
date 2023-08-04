@@ -79,7 +79,7 @@ test('test backend', async () => {
     await backend.initialize();
 
     expect(await backend.getBoolFeature('ns-1', 'bool', new ClientContext())).toEqual(true);
-    expect(await backend.getIntFeature('ns-1', 'int', new ClientContext())).toBe(12);
+    expect(await backend.getIntFeature('ns-1', 'int', new ClientContext())).toEqual(BigInt(12));
     expect(await backend.getFloatFeature('ns-1', 'float', new ClientContext())).toEqual(12.28);
     expect(await backend.getStringFeature('ns-1', 'string', new ClientContext())).toEqual('hello');
     expect(await backend.getJSONFeature('ns-1', 'json', new ClientContext())).toEqual({a: 1});

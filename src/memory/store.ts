@@ -17,17 +17,25 @@ export type StoredEvalResult = {
     evalResult: EvaluationResult
 }
 
-export class Store {
+type storedConfigs = {
     configs: configMap;
-    commitSHA: string;
+    commitSHA: string
+}
+
+export class Store {
+    storedConfigs: storedConfigs;
     
     constructor() {
-        this.configs = new Map();
-        this.commitSHA = "";
+        const configs = new Map();
+        const commitSHA = '';
+        this.storedConfigs = {
+            configs,
+            commitSHA
+        };
     }
 
-    async get(namespace: string, configKey: string) {
-        const nsMap = this.configs.get(namespace);
+    get(namespace: string, configKey: string) {
+        const nsMap = this.storedConfigs.configs.get(namespace);
         if (!nsMap) {
             throw new Error('namespace not found');
         }
@@ -38,23 +46,23 @@ export class Store {
         return result;
     }
 
-    async evaluateType(namespace: string, configKey: string, context: ClientContext) : Promise<StoredEvalResult> {
-        const cfg = await this.get(namespace, configKey);
+    evaluateType(namespace: string, configKey: string, context: ClientContext) : StoredEvalResult {
+        const cfg = this.get(namespace, configKey);
         return {
             ...cfg,
             evalResult: evaluate(cfg.config, namespace, context)
         };
     }
 
-    async getCommitSHA() {
-        return this.commitSHA;
+    getCommitSHA() {
+        return this.storedConfigs.commitSHA;
     }
 
     async load(contents: GetRepositoryContentsResponse | undefined) {
         if (!contents) {
             return;
         }
-        if (!await this.shouldUpdate(contents)) {
+        if (!this.shouldUpdate(contents)) {
             return;
         }
         const newConfigs: configMap = new Map();
@@ -74,15 +82,18 @@ export class Store {
     }
 
     async update(configs: configMap, commitSHA: string) {
-        if (commitSHA == this.commitSHA) {
+        if (commitSHA == this.storedConfigs.commitSHA) {
             return;
         }
-        this.configs = configs;
-        this.commitSHA = commitSHA;
+        const newStoredConfigs = {
+            configs,
+            commitSHA
+        };
+        this.storedConfigs = newStoredConfigs;
     }
 
-    async shouldUpdate(contents: GetRepositoryContentsResponse) {
-        return contents.commitSha != this.commitSHA;
+    shouldUpdate(contents: GetRepositoryContentsResponse) {
+        return contents.commitSha != this.storedConfigs.commitSHA;
     }
 }
 

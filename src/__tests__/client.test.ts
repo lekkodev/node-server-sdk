@@ -91,10 +91,10 @@ test('get int feature', async () => {
     configurable: true,
     writable: true
   });
-  jest.spyOn(client.client, "getIntValue").mockImplementation(async () => GetIntValueResponse.fromJson({
-    value: 42,
+  jest.spyOn(client.client, "getIntValue").mockImplementation(async () => new GetIntValueResponse({
+    value: BigInt(42),
   }));
-  expect(await client.getIntFeature('types', 'int', SAMPLE_CONTEXT)).toEqual(42);
+  expect(await client.getIntFeature('types', 'int', SAMPLE_CONTEXT)).toEqual(BigInt(42));
   expect(mockFn.mock.lastCall[0]).toEqual(GetIntValueRequest.fromJson({
     key: 'int',
     context: {

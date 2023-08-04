@@ -63,38 +63,35 @@ export function anyInt(i: number): Any {
 }
 
 export function any(value: bigint | number | string | boolean | Any): Any {
-    if (typeof(value) == 'bigint') {
-        const iv = new Int64Value({value: value});
-        return Any.pack(iv);
-    } 
-    if (typeof(value) == 'number') {
-        const iv = new DoubleValue({value: value});
-        return Any.pack(iv);
-    } 
-    if (typeof(value) == 'string') {
-        const iv = new StringValue({value: value});
-        return Any.pack(iv);
-    } 
-    if (typeof(value) == 'boolean') {
-        const iv = new BoolValue({value: value});
-        return Any.pack(iv);
+    switch (typeof value) {
+        case 'bigint': {
+            const v = new Int64Value({value: value});
+            return Any.pack(v);
+        }
+        case 'number': {
+            const v = new DoubleValue({value: value});
+            return Any.pack(v);
+        }
+        case 'string': {
+            const v = new StringValue({value: value});
+            return Any.pack(v);
+        }
+        case 'boolean': {
+            const v = new BoolValue({value: value});
+            return Any.pack(v);
+        }
+        default:
+            return value;
     }
-    return value;
 }
 
 export function lekkoType(value: bigint | number | string | boolean | Any): FeatureType {
-    if (typeof(value) == 'bigint') {
-        return FeatureType.INT;
-    } 
-    if (typeof(value) == 'number') {
-        return FeatureType.FLOAT;
-    } 
-    if (typeof(value) == 'string') {
-        return FeatureType.STRING;
-    } 
-    if (typeof(value) == 'boolean') {
-        return FeatureType.BOOL;
-    } 
+    switch (typeof value) {
+        case 'bigint': return FeatureType.INT;
+        case 'number': return FeatureType.FLOAT;
+        case 'string': return FeatureType.STRING;
+        case 'boolean': return FeatureType.BOOL;
+    }
     if (value.is(Value)) {
         return FeatureType.JSON;
     }

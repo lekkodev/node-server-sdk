@@ -52,7 +52,7 @@ export class TransportClient implements Client {
     return res.value;
   }
 
-  async getIntFeature(namespace: string, key: string, ctx: ClientContext): Promise<number> {
+  async getIntFeature(namespace: string, key: string, ctx: ClientContext): Promise<bigint> {
     if (!ctx) {
       ctx = new ClientContext();
     }
@@ -63,7 +63,7 @@ export class TransportClient implements Client {
     req.repoKey = this.repository;
     Object.assign(req.context, this.baseContext.data, ctx.data);
     const res = await this.client.getIntValue(req);
-    return Number(res.value);
+    return res.value;
   }
 
   async getFloatFeature(namespace: string, key: string, ctx: ClientContext): Promise<number> {

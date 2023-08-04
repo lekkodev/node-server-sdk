@@ -39,10 +39,10 @@ export class Backend implements Client {
         await this.evaluateAndUnpack(namespace, key, ctx, wrapper);
         return wrapper.value;
     }
-    async getIntFeature(namespace: string, key: string, ctx: ClientContext): Promise<number> {
+    async getIntFeature(namespace: string, key: string, ctx: ClientContext): Promise<bigint> {
         const wrapper = new Int64Value();
         await this.evaluateAndUnpack(namespace, key, ctx, wrapper);
-        return Number(wrapper.value);
+        return wrapper.value;
     }
     async getFloatFeature(namespace: string, key: string, ctx: ClientContext): Promise<number> {
         const wrapper = new DoubleValue();
