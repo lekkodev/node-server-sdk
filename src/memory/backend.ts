@@ -9,7 +9,7 @@ import { backOff } from 'exponential-backoff';
 import { ClientContext } from '../context/context';
 import { Client } from '../types/client';
 import { EventsBatcher, toContextKeysProto } from './events';
-import { Store } from './store';
+import { Store, StoredEvalResult } from './store';
 
 const eventsBatchSize = 100;
 
@@ -68,16 +68,7 @@ export class Backend implements Client {
     }
     async getProtoFeature(namespace: string, key: string, ctx: ClientContext): Promise<Any> {
         const result = this.store.evaluateType(namespace, key, ctx);
-        this.eventsBatcher.track(new FlagEvaluationEvent({
-            repoKey: this.repoKey,
-            commitSha: result.commitSHA,
-            featureSha: result.configSHA,
-            namespaceName: namespace,
-            featureName: key,
-            contextKeys: toContextKeysProto(ctx),
-            resultPath: result.evalResult.path,
-            clientEventTime: Timestamp.now(),
-        }));
+        this.track(namespace, key, ctx, result);
         return result.evalResult.value;
     }
 
@@ -91,17 +82,24 @@ export class Backend implements Client {
         if (!result.evalResult.value.unpackTo(wrapper)) {
             throw new Error('type mismatch');
         }
+        this.track(namespace, configKey, ctx, result);
+    }
+
+    track(namespace: string, key: string, ctx: ClientContext, result: StoredEvalResult) {
+        if (!this.eventsBatcher) {
+            return;
+        }
         this.eventsBatcher.track(new FlagEvaluationEvent({
             repoKey: this.repoKey,
             commitSha: result.commitSHA,
             featureSha: result.configSHA,
             namespaceName: namespace,
-            featureName: configKey,
+            featureName: key,
             contextKeys: toContextKeysProto(ctx),
             resultPath: result.evalResult.path,
             clientEventTime: Timestamp.now(),
         }));
-    }
+    }    
 
     async initialize() {
         const registerResponse = await backOff(() => this.distClient.registerClient({
@@ -140,7 +138,7 @@ export class Backend implements Client {
             repoKey: this.repoKey,
             sessionKey: this.sessionKey
         }));
-        await this.store.load(contentsResponse);
+        this.store.load(contentsResponse);
     }
 
     async shouldUpdateStore() {

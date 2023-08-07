@@ -58,9 +58,15 @@
     "@bufbuild/connect-node": "^0.12.0",
     "@bufbuild/connect-web": "^0.12.0",
     "@bufbuild/protobuf": "^1.2.0",
+    "@types/js-yaml": "^4.0.5",
     "browser-or-node": "^2.1.1",
     "esbuild": "^0.17.17",
     "exponential-backoff": "^3.1.1",
-    "set-interval-async": "^3.0.3"
+    "isomorphic-git": "^1.24.5",
+    "js-yaml": "^4.1.0",
+    "memfs": "^4.2.1",
+    "node-watch": "^0.7.4",
+    "set-interval-async": "^3.0.3",
+    "unionfs": "^4.5.1"
   }
 }

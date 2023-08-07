@@ -1,8 +1,6 @@
 import { DeregisterClientResponse, GetRepositoryVersionResponse, RegisterClientResponse, SendFlagEvaluationMetricsRequest, SendFlagEvaluationMetricsResponse } from "@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb";
-import { Any, Int32Value, Value } from "@bufbuild/protobuf";
 import { ClientContext } from "../../context/context";
-import { contents, namespace } from '../../fixtures/contents';
-import { simpleConfig } from "../../fixtures/eval";
+import { protoAny, testContents } from '../../fixtures/contents';
 import { ClientTransportBuilder, TransportProtocol } from "../../transport-builder";
 import { Backend } from "../backend";
 
@@ -20,26 +18,9 @@ async function setupBackend()  {
     jest.spyOn(backend.distClient, "registerClient").mockImplementation(async () => {
         return new RegisterClientResponse({sessionKey});
     });
-    const jsonVal = Value.fromJsonString(JSON.stringify({
-        a: 1
-    }));
-    const protoVal = new Int32Value({
-        value: 42,
-    });
-    const protoAny = Any.pack(protoVal);
+    
 
-    const resp = contents(
-        'sha', 
-        namespace(
-            'ns-1',
-            simpleConfig('bool', true),
-            simpleConfig('int', BigInt(12)),
-            simpleConfig('float', 12.28),
-            simpleConfig('string', 'hello'),
-            simpleConfig('json', Any.pack(jsonVal)),
-            simpleConfig('proto', protoAny),
-        ),
-    );
+    const resp = testContents();
 
     const mockVersion = jest.fn();
     Object.defineProperty(backend.distClient, "getRepositoryVersion", { value: mockVersion });
@@ -61,7 +42,6 @@ async function setupBackend()  {
 
     return {
         backend,
-        protoAny,
     };
 }
 
@@ -70,7 +50,6 @@ test('test backend', async () => {
 
     const testBackend = await setupBackend();
     const backend = testBackend.backend;
-    const protoAny = testBackend.protoAny;
 
     const mockSendEvents = jest.fn();
     Object.defineProperty(backend.distClient, "sendFlagEvaluationMetrics", { value: mockSendEvents });
@@ -85,7 +64,7 @@ test('test backend', async () => {
     expect(await backend.getFloatFeature('ns-1', 'float', new ClientContext().setDouble('key', 12.12))).toEqual(12.28);
     expect(await backend.getStringFeature('ns-1', 'string', new ClientContext().setString('key', 'foo'))).toEqual('hello');
     expect(await backend.getJSONFeature('ns-1', 'json', new ClientContext())).toEqual({a: 1});
-    expect(await backend.getProtoFeature('ns-1', 'proto', new ClientContext())).toEqual(protoAny);
+    expect(await backend.getProtoFeature('ns-1', 'proto', new ClientContext())).toEqual(protoAny());
 
     expect(async () => {
         await backend.getBoolFeature('ns-1', 'int', new ClientContext()); // type mismatch

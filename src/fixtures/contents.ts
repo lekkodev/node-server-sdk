@@ -1,5 +1,7 @@
 import { Feature as DistFeature, GetRepositoryContentsResponse, Namespace } from "@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb";
 import { Feature } from "@buf/lekkodev_cli.bufbuild_es/lekko/feature/v1beta1/feature_pb";
+import { Any, Int32Value, Value } from "@bufbuild/protobuf";
+import { simpleConfig } from "./eval";
 
 export function namespace(name: string, ...configs: Feature[]):  Namespace {
     return new Namespace({
@@ -19,5 +21,29 @@ export function contents(commitSha: string, ...namespaces: Namespace[]): GetRepo
     });
 }
 
+export function protoAny() {
+    const protoVal = new Int32Value({
+        value: 42,
+    });
+    return Any.pack(protoVal);
+}
 
+export function testContents() {
+    const jsonVal = Value.fromJsonString(JSON.stringify({
+        a: 1
+    }));
+    const pAny = protoAny();
+    return contents(
+        'sha', 
+        namespace(
+            'ns-1',
+            simpleConfig('bool', true),
+            simpleConfig('int', BigInt(12)),
+            simpleConfig('float', 12.28),
+            simpleConfig('string', 'hello'),
+            simpleConfig('json', Any.pack(jsonVal)),
+            simpleConfig('proto', pAny),
+        ),
+    );
+}
 
