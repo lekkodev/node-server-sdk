@@ -14,6 +14,7 @@ type configMap = Map<string, Map<string, configData>>
 export type StoredEvalResult = {
     config: Feature,
     configSHA: string,
+    commitSHA: string,
     evalResult: EvaluationResult
 }
 
@@ -50,6 +51,7 @@ export class Store {
         const cfg = this.get(namespace, configKey);
         return {
             ...cfg,
+            commitSHA: this.getCommitSHA(),
             evalResult: evaluate(cfg.config, namespace, context)
         };
     }
