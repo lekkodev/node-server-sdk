@@ -1,14 +1,19 @@
 import {
     DistributionService,
 } from '@buf/lekkodev_cli.bufbuild_connect-es/lekko/backend/v1beta1/distribution_service_connect';
+import { FlagEvaluationEvent } from '@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb';
 import { RepositoryKey } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
 import { PromiseClient, Transport, createPromiseClient } from '@bufbuild/connect';
-import { Any, BoolValue, DoubleValue, Int64Value, StringValue, Value } from '@bufbuild/protobuf';
+import { Any, BoolValue, DoubleValue, Int64Value, StringValue, Timestamp, Value } from '@bufbuild/protobuf';
 import { backOff } from 'exponential-backoff';
 import { ClientContext } from '../context/context';
 import { Client } from '../types/client';
+import { EventsBatcher, toContextKeysProto } from './events';
 import { Store } from './store';
 
+const eventsBatchSize = 100;
+
+// An in-memory store that fetches configs from lekko's backend.
 export class Backend implements Client {
     distClient: PromiseClient<typeof DistributionService>;
     store: Store;
@@ -17,6 +22,7 @@ export class Backend implements Client {
     closed: boolean;
     updateIntervalMs?: number;
     timeout?: NodeJS.Timeout;
+    eventsBatcher: EventsBatcher;
 
     constructor(
         transport: Transport,
@@ -32,6 +38,7 @@ export class Backend implements Client {
         });
         this.updateIntervalMs = updateIntervalMs;
         this.closed = false;
+        this.eventsBatcher = new EventsBatcher(this.distClient, eventsBatchSize);
     }
 
     async getBoolFeature(namespace: string, key: string, ctx: ClientContext): Promise<boolean> {
@@ -61,6 +68,16 @@ export class Backend implements Client {
     }
     async getProtoFeature(namespace: string, key: string, ctx: ClientContext): Promise<Any> {
         const result = this.store.evaluateType(namespace, key, ctx);
+        this.eventsBatcher.track(new FlagEvaluationEvent({
+            repoKey: this.repoKey,
+            commitSha: result.commitSHA,
+            featureSha: result.configSHA,
+            namespaceName: namespace,
+            featureName: key,
+            contextKeys: toContextKeysProto(ctx),
+            resultPath: result.evalResult.path,
+            clientEventTime: Timestamp.now(),
+        }));
         return result.evalResult.value;
     }
 
@@ -74,6 +91,16 @@ export class Backend implements Client {
         if (!result.evalResult.value.unpackTo(wrapper)) {
             throw new Error('type mismatch');
         }
+        this.eventsBatcher.track(new FlagEvaluationEvent({
+            repoKey: this.repoKey,
+            commitSha: result.commitSHA,
+            featureSha: result.configSHA,
+            namespaceName: namespace,
+            featureName: configKey,
+            contextKeys: toContextKeysProto(ctx),
+            resultPath: result.evalResult.path,
+            clientEventTime: Timestamp.now(),
+        }));
     }
 
     async initialize() {
@@ -86,6 +113,7 @@ export class Backend implements Client {
         if (this.updateIntervalMs) {
             await this.loop();
         }
+        await this.eventsBatcher.init(this.sessionKey);
     }
 
     async loop() {
@@ -128,6 +156,9 @@ export class Backend implements Client {
         this.closed = true;
         if (this.timeout) {
             this.timeout.unref();
+        }
+        if (this.eventsBatcher) {
+            await this.eventsBatcher.close();
         }
         await backOff(() => this.distClient.deregisterClient({
             sessionKey: this.sessionKey
