@@ -100,11 +100,30 @@ test('test backend', async () => {
     expect(sendRequest.events.length).toEqual(6);
     expect(sendRequest.sessionKey).toEqual('session-key');
     for (const event of sendRequest.events) {
+        expect(event.namespaceName).toEqual('ns-1');
+        expect(event.repoKey?.ownerName).toEqual('owner');
+        expect(event.repoKey?.repoName).toEqual('repo');
         switch (event.featureName) {
             case 'bool':
                 expect(event.contextKeys.length).toEqual(1);
                 expect(event.contextKeys[0].key).toEqual('key');
                 expect(event.contextKeys[0].type).toEqual('bool');
+                break;
+            case 'int':
+                expect(event.contextKeys.length).toEqual(1);
+                expect(event.contextKeys[0].key).toEqual('key');
+                expect(event.contextKeys[0].type).toEqual('int');
+                break;
+            case 'float':
+                expect(event.contextKeys.length).toEqual(1);
+                expect(event.contextKeys[0].key).toEqual('key');
+                expect(event.contextKeys[0].type).toEqual('float');
+                break;
+            case 'string':
+                expect(event.contextKeys.length).toEqual(1);
+                expect(event.contextKeys[0].key).toEqual('key');
+                expect(event.contextKeys[0].type).toEqual('string');
+                break;
         }
     }
 });
@@ -140,8 +159,9 @@ test('send metrics batch size', async () => {
 
     await backend.initialize();
     expect(await backend.getBoolFeature('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
-    expect(mockSendEvents.mock.calls.length).toEqual(1);
-    expect(backend.eventsBatcher.batch.length).toEqual(0);
+    expect(await backend.getBoolFeature('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
     await backend.close();
+    expect(mockSendEvents.mock.calls.length).toEqual(2);
+    expect(backend.eventsBatcher.batch.length).toEqual(0);
 });
 

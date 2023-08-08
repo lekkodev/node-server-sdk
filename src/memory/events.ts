@@ -34,7 +34,7 @@ export class EventsBatcher {
         this.sessionKey = sessionKey;
         this.interval = setIntervalAsync(async () => {
             await this.sendBatch();
-        }, 15 * 1000 /* 5s */);
+        }, 15 * 1000 /* 15s */);
     }
 
     track(event: FlagEvaluationEvent) {
