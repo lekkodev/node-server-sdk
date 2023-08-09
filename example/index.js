@@ -92,6 +92,7 @@ function sleep(ms) {
 
 initClient()
   .then((c) => {
+    console.log('a' || 'b');
     getConfig(c)
     .then(config => {
       console.log(`${opts.ownerName}/${opts.repoName}/${opts.namespace}/${opts.config} [${opts.configType}]: ${config}`);

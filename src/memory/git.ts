@@ -31,6 +31,7 @@ export class Git implements Client {
     watcher?: Watcher;
     path: string;
     loader: configLoader;
+    shouldWatch: boolean;
 
     constructor(
         repositoryOwner: string,
@@ -51,11 +52,7 @@ export class Git implements Client {
         });
         this.path = path;
         this.loader = new configLoader(path, useFS);
-        if (shouldWatch) {
-            this.watcher = watch(path, { recursive: true }, async () => {
-                await this.load();
-            });
-        }
+        this.shouldWatch = shouldWatch;
     }
 
     async initialize() {
@@ -74,6 +71,11 @@ export class Git implements Client {
             }
         }
         await this.load();
+        if (this.shouldWatch) {
+            this.watcher = watch(this.path, { recursive: true }, async () => {
+                await this.load();
+            });
+        }
     }
 
     async getBoolFeature(namespace: string, key: string, ctx: ClientContext): Promise<boolean> {
@@ -185,11 +187,12 @@ class configLoader {
     }
 
     async getCommitSha() {
-        const lg = await git.log({fs: this.fs, dir: this.path});
-        if (lg.length == 0) {
-            throw new Error('config repo has no git history');
-        }
-        return lg[0].oid;
+        return await git.resolveRef({fs: this.fs, dir: this.path, ref: 'HEAD'});
+        // const lg = await git.log({fs: this.fs, dir: this.path});
+        // if (lg.length == 0) {
+        //     throw new Error('config repo has no git history');
+        // }
+        // return lg[0].oid;
     }
 
     async getNamespaces() : Promise<Namespace[]> {

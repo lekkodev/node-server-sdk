@@ -53,6 +53,8 @@ async function setupClient() {
     }).build();
     const sessionKey = 'session-key';
     const { fs, sha } = await setupFS();
+    // Exp for use of 'any': https://github.com/streamich/unionfs/issues/453
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const client = new Git('owner', 'repo', '/config', false, transport, fs as any);
     if (client.distClient) {
         const mockRegister = jest.fn();
