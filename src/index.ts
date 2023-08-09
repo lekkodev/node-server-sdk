@@ -76,7 +76,7 @@ async function initGitInMemoryClient(options: GitOptions): Promise<Client> {
   let transport: Transport | undefined;
   if (options.apiKey) {
     transport = await new ClientTransportBuilder({
-      hostname: options.hostname || "https://prod.api.lekko.dev",
+      hostname: options.hostname ?? "https://prod.api.lekko.dev",
       protocol: TransportProtocol.HTTP,
       apiKey: options.apiKey
     }).build();
