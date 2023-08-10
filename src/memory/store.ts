@@ -1,5 +1,6 @@
 import { GetRepositoryContentsResponse } from '@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb';
 import { Feature } from '@buf/lekkodev_cli.bufbuild_es/lekko/feature/v1beta1/feature_pb';
+import { createHash } from 'node:crypto';
 import { ClientContext } from '../context/context';
 import { EvaluationResult, evaluate } from '../evaluation/eval';
 
@@ -18,25 +19,19 @@ export type StoredEvalResult = {
     evalResult: EvaluationResult
 }
 
-type storedConfigs = {
-    configs: configMap;
-    commitSHA: string
-}
-
 export class Store {
-    storedConfigs: storedConfigs;
+    configs: configMap;
+    commitSHA: string;
+    contentHash: bigint;
     
     constructor() {
-        const configs = new Map();
-        const commitSHA = '';
-        this.storedConfigs = {
-            configs,
-            commitSHA
-        };
+        this.configs = new Map();
+        this.commitSHA = '';
+        this.contentHash = BigInt(0);
     }
 
     get(namespace: string, configKey: string) {
-        const nsMap = this.storedConfigs.configs.get(namespace);
+        const nsMap = this.configs.get(namespace);
         if (!nsMap) {
             throw new Error('namespace not found');
         }
@@ -57,15 +52,19 @@ export class Store {
     }
 
     getCommitSHA() {
-        return this.storedConfigs.commitSHA;
+        return this.commitSHA;
     }
 
-    async load(contents: GetRepositoryContentsResponse | undefined) {
+    load(contents: GetRepositoryContentsResponse | undefined) {
         if (!contents) {
-            return;
+            return false;
         }
-        if (!this.shouldUpdate(contents)) {
-            return;
+        const contentHash = createHash('sha256')
+            .update(contents.toBinary())
+            .digest()
+            .readBigInt64BE();
+        if (!this.shouldUpdate(contents, contentHash)) {
+            return false;
         }
         const newConfigs: configMap = new Map();
         contents.namespaces.forEach((ns) => {
@@ -80,22 +79,14 @@ export class Store {
             });
             newConfigs.set(ns.name, nsMap);
         });
-        await this.update(newConfigs, contents.commitSha);
+        this.configs = newConfigs;
+        this.commitSHA = contents.commitSha;
+        this.contentHash = contentHash;
+        return true;
     }
 
-    async update(configs: configMap, commitSHA: string) {
-        if (commitSHA == this.storedConfigs.commitSHA) {
-            return;
-        }
-        const newStoredConfigs = {
-            configs,
-            commitSHA
-        };
-        this.storedConfigs = newStoredConfigs;
-    }
-
-    shouldUpdate(contents: GetRepositoryContentsResponse) {
-        return contents.commitSha != this.storedConfigs.commitSHA;
+    shouldUpdate(contents: GetRepositoryContentsResponse, contentHash: bigint) {
+        return contents.commitSha != this.commitSHA || contentHash != this.contentHash;
     }
 }
 

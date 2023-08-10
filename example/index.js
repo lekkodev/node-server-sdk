@@ -3,6 +3,7 @@ const {
   initAPIClient,
   initSidecarClient,
   initBackendInMemoryClient,
+  initGitInMemoryClient,
 } = require('../');
 const { program } = require('commander');
 
@@ -15,7 +16,8 @@ program
   .option('-r, --repo-name [reponame]', 'configuration repository name', 'example')
   .option('-n, --namespace [namespace]', 'namespace of configuration to fetch', 'default')
   .option('-c, --config [name]', 'name of configuration to fetch', 'example')
-  .option('-ct, --config-type [configtype]', 'type of configuration fetch', 'bool');
+  .option('-ct, --config-type [configtype]', 'type of configuration fetch', 'bool')
+  .option('-p, --path [path]', 'path to config repository on disk', '');
 
 program.parse(process.argv);
 const opts = program.opts();
@@ -50,6 +52,17 @@ async function initClient() {
         updateIntervalMs: 3 * 1000,
       });
       break;
+    case 'git':
+      if (opts.path.length == 0) {
+        throw new Error('no path provided');
+      }
+      client = initGitInMemoryClient({
+        apiKey: opts.apikey,
+        repositoryOwner: opts.ownerName,
+        repositoryName: opts.repoName,
+        path: opts.path,
+      });
+      break;
     default:
       throw new Error(`unknown lekko client type '${opts.type}'`);
   }
@@ -79,11 +92,11 @@ function sleep(ms) {
 
 initClient()
   .then((c) => {
+    console.log('a' || 'b');
     getConfig(c)
     .then(config => {
       console.log(`${opts.ownerName}/${opts.repoName}/${opts.namespace}/${opts.config} [${opts.configType}]: ${config}`);
-      c.close()
-        .then(() => {return;});
+      c.close().then(() => {return;});
     });
   });
 
