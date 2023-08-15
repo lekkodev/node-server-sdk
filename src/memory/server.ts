@@ -4,6 +4,9 @@ import { connectNodeAdapter } from "@bufbuild/connect-node";
 import { Http2Server, createServer } from 'http2';
 import { Store } from "./store";
 
+// Runs a simple vanilla nodejs web server for debugging. 
+// The server exposes the interface defined here: 
+//      https://buf.build/lekkodev/sdk/docs/main:lekko.server.v1beta1
 export class SDKServer {
     server?: Http2Server;
 

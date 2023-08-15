@@ -63,7 +63,7 @@ async function initCachedAPIClient(options: BackendOptions): Promise<Client> {
     transport, 
     options.repositoryOwner, 
     options.repositoryName, 
-    options.updateIntervalMs || defaultUpdateIntervalMs, 
+    options.updateIntervalMs ?? defaultUpdateIntervalMs, 
     options.serverPort,
   );
   await client.initialize();
