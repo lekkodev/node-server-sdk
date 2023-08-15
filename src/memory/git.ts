@@ -15,6 +15,7 @@ import { IFS, IUnionFs, ufs } from 'unionfs';
 import { ClientContext } from '../context/context';
 import { Client } from '../types/client';
 import { EventsBatcher, toContextKeysProto } from './events';
+import { SDKServer } from './server';
 import { Store, StoredEvalResult } from './store';
 import path = require('node:path');
 
@@ -32,6 +33,7 @@ export class Git implements Client {
     path: string;
     loader: configLoader;
     shouldWatch: boolean;
+    server: SDKServer;
 
     constructor(
         repositoryOwner: string,
@@ -40,12 +42,13 @@ export class Git implements Client {
         shouldWatch: boolean,
         transport?: Transport,
         useFS?: IFS,
+        port?: number,
     ) {
         if (transport) {
             this.distClient = createPromiseClient(DistributionService, transport);
             this.eventsBatcher = new EventsBatcher(this.distClient, eventsBatchSize);
         }
-        this.store = new Store();
+        this.store = new Store(repositoryOwner, repositoryName);
         this.repoKey = new RepositoryKey({
             ownerName: repositoryOwner,
             repoName: repositoryName
@@ -53,6 +56,7 @@ export class Git implements Client {
         this.path = path;
         this.loader = new configLoader(path, useFS);
         this.shouldWatch = shouldWatch;
+        this.server = new SDKServer(this.store, port);
     }
 
     async initialize() {
@@ -145,6 +149,7 @@ export class Git implements Client {
     }
 
     async close() {
+        this.server.close();
         if (this.eventsBatcher) {
             await this.eventsBatcher.close();
         }
