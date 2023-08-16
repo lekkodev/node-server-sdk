@@ -2,28 +2,34 @@ const {
   ClientContext,
   initAPIClient,
   initSidecarClient,
-  initBackendInMemoryClient,
-  initGitInMemoryClient,
+  initCachedAPIClient,
+  initCachedGitClient,
+  TransportProtocol,
 } = require('../');
 const { program } = require('commander');
 
 program
   .name('example')
   .description('example script to demonstrate usage of the node-server-sdk')
-  .option('-t, --type [type]', 'type of lekko client to instantiate', 'backend')
+  .option('-t, --type [type]', 'type of lekko client to instantiate', 'cached')
   .option('-a, --apikey [apikey]', 'api key to communicate with lekko', '')
   .option('-o, --owner-name [ownername]', 'configuration repository owner', 'lekkodev')
   .option('-r, --repo-name [reponame]', 'configuration repository name', 'example')
   .option('-n, --namespace [namespace]', 'namespace of configuration to fetch', 'default')
   .option('-c, --config [name]', 'name of configuration to fetch', 'example')
   .option('-ct, --config-type [configtype]', 'type of configuration fetch', 'bool')
-  .option('-p, --path [path]', 'path to config repository on disk', '');
+  .option('-p, --path [path]', 'path to config repository on disk', '')
+  .option('-sp, --server-port [port]', 'port to use for debug server', 3003)
+  .option('-s, --sleep [seconds]', 'duration in seconds to sleep after fetching', 0)
+  .option('-h, --hostname [url]', 'url to fetch configuration from', '')
+  .option('-tp, --transport-protocol [protocol]', 'protocol to use for communicating with the server (http, grpc)', '');
 
 program.parse(process.argv);
 const opts = program.opts();
 
 async function initClient() {
   var client;
+  const hostname = opts.hostname.length > 0 ? opts.hostname : undefined;
   switch (opts.type) {
     case 'api':
       if (opts.apiKey.length == 0) {
@@ -33,40 +39,58 @@ async function initClient() {
         apiKey: opts.apikey,
         repositoryOwner: opts.ownerName,
         repositoryName: opts.repoName,
+        hostname: hostname,
+        transportProtocol: transportProtocol(),
       });
       break;
     case 'sidecar':
       client = initSidecarClient({
         repositoryOwner: opts.ownerName,
         repositoryName: opts.repoName,
+        hostname: hostname,
+        transportProtocol: transportProtocol(),
       });
       break;
-    case 'backend':
-      if (!opts.apikey || opts.apikey.length == 0) {
-        throw new Error('no apikey provided');
-      }
-      client = initBackendInMemoryClient({
+    case 'cached':
+      var options = {
         apiKey: opts.apikey,
         repositoryOwner: opts.ownerName,
         repositoryName: opts.repoName,
         updateIntervalMs: 3 * 1000,
-      });
+        serverPort: opts.serverPort,
+        hostname: hostname,
+        transportProtocol: transportProtocol(),
+      };
+      client = initCachedAPIClient(options);
       break;
     case 'git':
       if (opts.path.length == 0) {
         throw new Error('no path provided');
       }
-      client = initGitInMemoryClient({
+      client = initCachedGitClient({
         apiKey: opts.apikey,
         repositoryOwner: opts.ownerName,
         repositoryName: opts.repoName,
         path: opts.path,
+        serverPort: opts.serverPort,
+        hostname: hostname,
+        transportProtocol: transportProtocol(),
       });
       break;
     default:
       throw new Error(`unknown lekko client type '${opts.type}'`);
   }
   return client;
+}
+
+function transportProtocol() {
+  if (opts.transportProtocol.length > 0) {
+    switch (opts.transportProtocol) {
+      case 'http': return TransportProtocol.HTTP;
+      case 'grpc': return TransportProtocol.gRPC;
+    }
+  }
+  return undefined;
 }
 
 async function getConfig(client) {
@@ -92,11 +116,13 @@ function sleep(ms) {
 
 initClient()
   .then((c) => {
-    console.log('a' || 'b');
     getConfig(c)
     .then(config => {
       console.log(`${opts.ownerName}/${opts.repoName}/${opts.namespace}/${opts.config} [${opts.configType}]: ${config}`);
-      c.close().then(() => {return;});
+      sleep(opts.sleep * 1000).then(() => {
+        c.close().then(() => {return;});
+      });
+      
     });
   });
 

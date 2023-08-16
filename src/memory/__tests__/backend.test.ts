@@ -70,6 +70,9 @@ test('test backend', async () => {
         await backend.getBoolFeature('ns-1', 'int', new ClientContext()); // type mismatch
     }).rejects.toThrow();
 
+    const listResp = backend.store.listContents();
+    expect(listResp.commitSha).toEqual('sha');
+
     await backend.close();
 
     const calls = mockSendEvents.mock.calls;

@@ -9,6 +9,7 @@ import { backOff } from 'exponential-backoff';
 import { ClientContext } from '../context/context';
 import { Client } from '../types/client';
 import { EventsBatcher, toContextKeysProto } from './events';
+import { SDKServer } from './server';
 import { Store, StoredEvalResult } from './store';
 
 const eventsBatchSize = 100;
@@ -23,15 +24,17 @@ export class Backend implements Client {
     updateIntervalMs?: number;
     timeout?: NodeJS.Timeout;
     eventsBatcher: EventsBatcher;
+    server: SDKServer;
 
     constructor(
         transport: Transport,
         repositoryOwner: string,
         repositoryName: string,
         updateIntervalMs?: number,
+        port?: number,
     ) {
         this.distClient = createPromiseClient(DistributionService, transport);
-        this.store = new Store();
+        this.store = new Store(repositoryOwner, repositoryName);
         this.repoKey = new RepositoryKey({
             ownerName: repositoryOwner,
             repoName: repositoryName
@@ -39,6 +42,7 @@ export class Backend implements Client {
         this.updateIntervalMs = updateIntervalMs;
         this.closed = false;
         this.eventsBatcher = new EventsBatcher(this.distClient, eventsBatchSize);
+        this.server = new SDKServer(this.store, port);
     }
 
     async getBoolFeature(namespace: string, key: string, ctx: ClientContext): Promise<boolean> {
@@ -152,6 +156,7 @@ export class Backend implements Client {
 
     async close() {
         this.closed = true;
+        this.server.close();
         if (this.timeout) {
             this.timeout.unref();
         }
