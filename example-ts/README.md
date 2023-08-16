@@ -1,4 +1,4 @@
-# Lekko Node Server SDK Example
+# Lekko Node Server SDK Typescript Example
 
 ## Install and run the server
 ```
@@ -17,8 +17,8 @@ Options:
   -c, --config [name]                   name of configuration to fetch (default: "example")
   -ct, --config-type [configtype]       type of configuration fetch (default: "bool")
   -p, --path [path]                     path to config repository on disk (default: "")
-  -sp, --server-port [port]             port to use for debug server (default: 3003)
-  -s, --sleep [seconds]                 duration in seconds to sleep after fetching (default: 0)
+  -sp, --server-port [port]             port to use for debug server (default: "3003")
+  -s, --sleep [seconds]                 duration in seconds to sleep after fetching (default: "0")
   -h, --hostname [url]                  url to fetch configuration from (default: "")
   -tp, --transport-protocol [protocol]  protocol to use for communicating with the server (http, grpc)
                                         (default: "")
@@ -28,7 +28,7 @@ Options:
 To run the example with the in-memory client that hits lekko backend, you will need to provide an API key.
 
 ```bash
-node index \
+npm run start -- \
     --apikey $LEKKO_API_KEY \
     --owner-name myowner \
     --repo-name myrepo \
