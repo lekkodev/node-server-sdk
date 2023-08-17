@@ -60,6 +60,7 @@ export class EventsBatcher {
                 sessionKey: this.sessionKey
             })), this.backoffOptions);
         } catch (e) {
+            // eslint-disable-next-line no-console
             console.log(`failed to send metrics batch: ${e}`);
             this.batch.unshift(...events);
         }

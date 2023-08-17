@@ -80,7 +80,8 @@ export class TransportClient implements Client {
     return res.value;
   }
 
-  async getJSONFeature(namespace: string, key: string, ctx: ClientContext): Promise<object> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async getJSONFeature(namespace: string, key: string, ctx: ClientContext): Promise<any> {
     if (!ctx) {
       ctx = new ClientContext();
     }

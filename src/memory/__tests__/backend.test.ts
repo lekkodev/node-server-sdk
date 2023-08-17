@@ -1,6 +1,6 @@
 import { DeregisterClientResponse, GetRepositoryVersionResponse, RegisterClientResponse, SendFlagEvaluationMetricsRequest, SendFlagEvaluationMetricsResponse } from "@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb";
 import { ClientContext } from "../../context/context";
-import { protoAny, testContents } from '../../fixtures/contents';
+import { jsonConfigType, protoAny, testContents } from '../../fixtures/contents';
 import { ClientTransportBuilder, TransportProtocol } from "../../transport-builder";
 import { Backend } from "../backend";
 
@@ -147,3 +147,20 @@ test('send metrics batch size', async () => {
     expect(backend.eventsBatcher.batch.length).toEqual(0);
 });
 
+test('test json return type', async () => {
+    const testBackend = await setupBackend();
+    const backend = testBackend.backend;
+
+    const mockSendEvents = jest.fn();
+    Object.defineProperty(backend.distClient, "sendFlagEvaluationMetrics", { value: mockSendEvents });
+    jest.spyOn(backend.distClient, "sendFlagEvaluationMetrics").mockImplementation(async () => {
+        return new SendFlagEvaluationMetricsResponse();
+    });
+
+    await backend.initialize();
+
+    const result: jsonConfigType = await backend.getJSONFeature('ns-1', 'json', new ClientContext());
+    expect(result).toEqual({a: 1});
+
+    await backend.close();
+});

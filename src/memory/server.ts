@@ -27,6 +27,7 @@ export class SDKServer {
         if (this.server) {
             this.server.close((err) => {
                 if (err) {
+                    // eslint-disable-next-line no-console
                     console.error('Error closing sdk server', err);
                 }
             });
