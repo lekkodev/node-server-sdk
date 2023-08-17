@@ -36,13 +36,15 @@ Then, you can add the package to your project by running `npm install @lekko/nod
 
 ### Usage
 
-#### Initializing a Lekko client in Sidecar provider mode
+#### Initializing a cached Lekko client
+
+Creates a client that fetches configs from Lekko backend and caches them in memory. Configs are kept up to date via polling.
 
 ```javascript
 const lekko = require("@lekko/node-server-sdk");
 
-const client = await lekko.initSidecarClient({
-    hostname: "http://localhost:50051",
+const client = await lekko.initCachedAPIClient({
+    apiKey: <API_KEY>,
     repositoryOwner: <REPOSITORY_OWNER>,
     repositoryName: <REPOSITORY_NAME>,
 });
@@ -52,15 +54,18 @@ const stringFeature = await client.getStringFeature("my_namespace", "my_feature"
 console.log(stringFeature);
 ```
 
-#### Initializing a Lekko client in API provider mode
+#### Initializing a cached Lekko client in git mode
+
+Creates a client that reads configs from a git repository on disk and caches them in memory. Configs are kept up to date via a file watcher.
 
 ```javascript
 const lekko = require("@lekko/node-server-sdk");
 
-const client = await lekko.initAPIClient({
+const client = await lekko.initCachedGitClient({
     apiKey: <API_KEY>,
     repositoryOwner: <REPOSITORY_OWNER>,
     repositoryName: <REPOSITORY_NAME>,
+    path: 'path/to/config/repo',
 });
 
 const context = new lekko.ClientContext().setString("my_context_key", "my_context_value");
