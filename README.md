@@ -95,4 +95,4 @@ To learn more about the Node.js module system, refer to their docs [here](https:
 
 ## Example
 
-See: https://github.com/lekkodev/node-server-sdk/tree/main/example
+See: https://github.com/lekkodev/node-server-sdk/tree/main/example-ts
