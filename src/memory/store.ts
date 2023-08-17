@@ -47,7 +47,7 @@ export class Store {
         return result;
     }
 
-    evaluateType(namespace: string, configKey: string, context: ClientContext) : StoredEvalResult {
+    evaluateType(namespace: string, configKey: string, context?: ClientContext) : StoredEvalResult {
         const cfg = this.get(namespace, configKey);
         return {
             ...cfg,

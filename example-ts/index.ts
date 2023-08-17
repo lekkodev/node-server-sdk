@@ -1,12 +1,11 @@
 import { program } from 'commander';
 import {
     Client,
-    ClientContext,
     TransportProtocol,
     initAPIClient,
     initCachedAPIClient,
     initCachedGitClient,
-    initSidecarClient,
+    initSidecarClient
 } from '../';
 
 program
@@ -98,14 +97,13 @@ function transportProtocol() {
 async function getConfig(client: Client) {
     const ns = opts.namespace;
     const key = opts.config;
-    const ctx = new ClientContext();
     switch (opts.configType) {
-        case 'bool': return await client.getBoolFeature(ns, key, ctx);
-        case 'string': return await client.getStringFeature(ns, key, ctx);
-        case 'int': return await client.getIntFeature(ns, key, ctx);
-        case 'float': return await client.getFloatFeature(ns, key, ctx);
-        case 'json': return await client.getJSONFeature(ns, key, ctx);
-        case 'proto': return await client.getProtoFeature(ns, key, ctx);
+        case 'bool': return await client.getBoolFeature(ns, key);
+        case 'string': return await client.getStringFeature(ns, key);
+        case 'int': return await client.getIntFeature(ns, key);
+        case 'float': return await client.getFloatFeature(ns, key);
+        case 'json': return await client.getJSONFeature(ns, key);
+        case 'proto': return await client.getProtoFeature(ns, key);
     }
     throw new Error(`unknown config type '${opts.configType}' `);
 }

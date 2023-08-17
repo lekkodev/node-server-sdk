@@ -164,3 +164,21 @@ test('test json return type', async () => {
 
     await backend.close();
 });
+
+test('test empty context', async () => {
+    const testBackend = await setupBackend();
+    const backend = testBackend.backend;
+
+    const mockSendEvents = jest.fn();
+    Object.defineProperty(backend.distClient, "sendFlagEvaluationMetrics", { value: mockSendEvents });
+    jest.spyOn(backend.distClient, "sendFlagEvaluationMetrics").mockImplementation(async () => {
+        return new SendFlagEvaluationMetricsResponse();
+    });
+
+    await backend.initialize();
+
+    const result = await backend.getBoolFeature('ns-1', 'bool');
+    expect(result).toEqual(true);
+
+    await backend.close();
+});

@@ -14,7 +14,7 @@ export type EvaluationResult = {
 // where the config is represented as a tree. The root of the tree contains a default value, and 
 // each override is a child node of the root. Overrides can also have overrides, which is what
 // makes this an n-level tree traversal algorithm.
-export function evaluate(config: Feature, namespace: string, context: ClientContext) : EvaluationResult {
+export function evaluate(config: Feature, namespace: string, context?: ClientContext) : EvaluationResult {
     if (!config.tree) {
         throw new Error('config tree is empty');
     }
@@ -42,11 +42,11 @@ type traverseResult = {
     path: number[]
 }
 
-function traverse(override: Constraint | undefined, namespace: string, configName: string, context: ClientContext) : traverseResult {
+function traverse(override: Constraint | undefined, namespace: string, configName: string, context?: ClientContext) : traverseResult {
     if (!override) {
         return { passes: false, path: [] };
     }
-    const passes = evaluateRule(override.ruleAstNew, context, namespace, configName);
+    const passes = evaluateRule(override.ruleAstNew, namespace, configName, context);
     if (!passes) {
         // If the rule fails, we avoid further traversal
         return { passes, path: [] };

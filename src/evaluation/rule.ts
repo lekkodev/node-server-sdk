@@ -4,7 +4,7 @@ import { Value } from '@bufbuild/protobuf';
 import { h32 } from 'xxhashjs';
 import { ClientContext } from '../context/context';
 
-export default function evaluateRule(rule: Rule | undefined, context: ClientContext, namespace: string, configName: string): boolean {
+export default function evaluateRule(rule: Rule | undefined, namespace: string, configName: string, context?: ClientContext): boolean {
     if (!rule) {
         throw new Error('empty rule');
     }
@@ -12,14 +12,14 @@ export default function evaluateRule(rule: Rule | undefined, context: ClientCont
     case 'boolConst':
         return rule.rule.value;
     case 'not':
-        return !evaluateRule(rule.rule.value, context, namespace, configName);
+        return !evaluateRule(rule.rule.value, namespace, configName, context);
     case 'logicalExpression': {
         if (rule.rule.value.rules.length == 0) {
             throw new Error('no rules found in logical expression');
         }
         const lo = rule.rule.value.logicalOperator;
         return rule.rule.value.rules
-        .map((r) => evaluateRule(r, context, namespace, configName))
+        .map((r) => evaluateRule(r, namespace, configName, context))
         .reduce((prev, curr) => {
             switch (lo) {
             case LogicalOperator.AND:
@@ -33,7 +33,7 @@ export default function evaluateRule(rule: Rule | undefined, context: ClientCont
     }
     case 'atom': {
         const contextKey = rule.rule.value.contextKey;
-        const contextValue = context.get(contextKey);
+        const contextValue = context && context.get(contextKey);
         if (rule.rule.value.comparisonOperator == ComparisonOperator.PRESENT) {
             return contextValue !== undefined;
         }
@@ -64,7 +64,7 @@ export default function evaluateRule(rule: Rule | undefined, context: ClientCont
     case 'callExpression': {
         switch (rule.rule.value.function.case) {
         case 'bucket':
-            return evaluateBucket(rule.rule.value.function.value, context, namespace, configName);
+            return evaluateBucket(rule.rule.value.function.value, namespace, configName, context);
         }
         throw new Error('unknown function type');
     }
@@ -76,9 +76,9 @@ export default function evaluateRule(rule: Rule | undefined, context: ClientCont
 // In reality, we internally store the threshold as an integer in [0,100000]
 // to account for up to 3 decimal places.
 // The feature value is salted using the namespace, feature name, and context key.
-function evaluateBucket(bucketF: CallExpression_Bucket, context: ClientContext, namespace: string, configName: string) : boolean {
+function evaluateBucket(bucketF: CallExpression_Bucket, namespace: string, configName: string, context?: ClientContext) : boolean {
     const ctxKey = bucketF.contextKey;
-    const value = context.get(ctxKey);
+    const value = context && context.get(ctxKey);
     if (!value) {
         // If key is missing in context map, evaluate to false - move to next rule
         return false;
