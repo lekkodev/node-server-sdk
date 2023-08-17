@@ -38,7 +38,7 @@ export class TransportClient implements Client {
     return;
   }
 
-  async getBoolFeature(namespace: string, key: string, ctx: ClientContext): Promise<boolean> {
+  async getBoolFeature(namespace: string, key: string, ctx?: ClientContext): Promise<boolean> {
     if (!ctx) {
       ctx = new ClientContext();
     }
@@ -52,7 +52,7 @@ export class TransportClient implements Client {
     return res.value;
   }
 
-  async getIntFeature(namespace: string, key: string, ctx: ClientContext): Promise<bigint> {
+  async getIntFeature(namespace: string, key: string, ctx?: ClientContext): Promise<bigint> {
     if (!ctx) {
       ctx = new ClientContext();
     }
@@ -66,7 +66,7 @@ export class TransportClient implements Client {
     return res.value;
   }
 
-  async getFloatFeature(namespace: string, key: string, ctx: ClientContext): Promise<number> {
+  async getFloatFeature(namespace: string, key: string, ctx?: ClientContext): Promise<number> {
     if (!ctx) {
       ctx = new ClientContext();
     }
@@ -81,7 +81,7 @@ export class TransportClient implements Client {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async getJSONFeature(namespace: string, key: string, ctx: ClientContext): Promise<any> {
+  async getJSONFeature(namespace: string, key: string, ctx?: ClientContext): Promise<any> {
     if (!ctx) {
       ctx = new ClientContext();
     }
@@ -101,7 +101,7 @@ export class TransportClient implements Client {
     return {};
   }
 
-  async getProtoFeature(namespace: string, key: string, ctx: ClientContext): Promise<Any> {
+  async getProtoFeature(namespace: string, key: string, ctx?: ClientContext): Promise<Any> {
     if (!ctx) {
       ctx = new ClientContext();
     }
@@ -123,7 +123,7 @@ export class TransportClient implements Client {
     });
   }
 
-  async getStringFeature(namespace: string, key: string, ctx: ClientContext): Promise<string> {
+  async getStringFeature(namespace: string, key: string, ctx?: ClientContext): Promise<string> {
     if (!ctx) {
       ctx = new ClientContext();
     }

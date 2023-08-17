@@ -13,7 +13,7 @@ test('empty config tree', () => {
 
 type testEvalParams = {
     config: Feature,
-    context: ClientContext,
+    context: ClientContext | undefined,
     expected?: number // we are only testing int config traversal
     hasError?: boolean
     expectedPath?: number[]
@@ -49,6 +49,15 @@ describe('no overrides traversal', () => {
     testEval({
         config: config(tree()),
         context: new ClientContext().setString('key', 'anything'),
+        expected: defaultValue,
+        expectedPath: []
+    });
+});
+
+describe('test empty context', () => {
+    testEval({
+        config: config(tree()),
+        context: undefined,
         expected: defaultValue,
         expectedPath: []
     });

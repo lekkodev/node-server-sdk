@@ -1,7 +1,7 @@
 import { Atom, CallExpression, CallExpression_Bucket, ComparisonOperator, LogicalExpression, LogicalOperator, Rule } from '@buf/lekkodev_cli.bufbuild_es/lekko/rules/v1beta3/rules_pb';
 import { ClientContext } from '../../context/context';
-import evaluateRule from '../rule';
 import { atom, rules } from '../../fixtures/rule';
+import evaluateRule from '../rule';
 
 const ns1 = 'ns_1';
 const ns2 = 'ns_2';
@@ -191,7 +191,7 @@ describe('bool const', () => {
                     value: b,
                 }
             });
-            expect(evaluateRule(rule, new ClientContext(), ns1, config1)).toBe(b);
+            expect(evaluateRule(rule, ns1, config1, new ClientContext())).toBe(b);
         });
     }
 });
@@ -206,9 +206,9 @@ test('present', () => {
             }),
         }
     });
-    expect(evaluateRule(rule, new ClientContext(), ns1, config1)).toBe(false);
-    expect(evaluateRule(rule, new ClientContext().setInt('age', 10), ns1, config1)).toBe(true);
-    expect(evaluateRule(rule, new ClientContext().setString('age', 'not a number'), ns1, config1)).toBe(true);
+    expect(evaluateRule(rule, ns1, config1, new ClientContext())).toBe(false);
+    expect(evaluateRule(rule, ns1, config1, new ClientContext().setInt('age', 10))).toBe(true);
+    expect(evaluateRule(rule, ns1, config1, new ClientContext().setString('age', 'not a number'))).toBe(true);
 });
 
 type atomTest = {
@@ -218,14 +218,14 @@ type atomTest = {
     hasError?: boolean
 }
 
-function testRule(rule: Rule | undefined, context: ClientContext, ns: string, cfg: string, expected?: boolean, hasError?: boolean) {
+function testRule(rule: Rule | undefined, context: ClientContext | undefined, ns: string, cfg: string, expected?: boolean, hasError?: boolean) {
     test(`[${ns}/${cfg}] rule: ${rule && rule.toJsonString()}, ctx: ${context}`, () => {
         if (hasError) {
             expect(() => {
-                evaluateRule(rule, context, ns, cfg);
+                evaluateRule(rule, ns, cfg, context);
             }).toThrow();
         } else {
-            expect(evaluateRule(rule, context, ns, cfg)).toBe(expected);
+            expect(evaluateRule(rule, ns, cfg, context)).toBe(expected);
         }
     });
 }
@@ -249,7 +249,7 @@ function testAtom(at: atomTest) {
 }
 
 describe('empty rule', () => {
-    testRule(undefined, new ClientContext, ns1, config1, undefined, true);
+    testRule(undefined, new ClientContext(), ns1, config1, undefined, true);
 });
 
 describe('unknown comparison op', () => {
@@ -261,6 +261,18 @@ describe('unknown comparison op', () => {
         }
     });
     testRule(rule, new ClientContext().setInt('age', 10), ns1, config1, undefined, true);
+});
+
+describe('test empty context', () => {
+    const a = atom('age', 'pr', 10);
+    const rule = new Rule({
+        rule: {
+            case: 'atom',
+            value: a,
+        }
+    });
+    testRule(rule, undefined, ns1, config1, false);
+    testRule(rule, new ClientContext().setInt('age', 10), ns1, config1, true);
 });
 
 describe('test equality', () => {

@@ -77,8 +77,11 @@ export class EventsBatcher {
     }
 }
 
-export function toContextKeysProto(context: ClientContext) : ContextKey[] {
+export function toContextKeysProto(context?: ClientContext) : ContextKey[] {
     const result: ContextKey[] = [];
+    if (!context) {
+        return result;
+    }
     for (const key in context.data) {
         result.push(new ContextKey({
             key,

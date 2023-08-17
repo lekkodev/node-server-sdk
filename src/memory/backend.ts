@@ -45,52 +45,52 @@ export class Backend implements Client {
         this.server = new SDKServer(this.store, port);
     }
 
-    async getBoolFeature(namespace: string, key: string, ctx: ClientContext): Promise<boolean> {
+    async getBoolFeature(namespace: string, key: string, ctx?: ClientContext): Promise<boolean> {
         const wrapper = new BoolValue();
-        await this.evaluateAndUnpack(namespace, key, ctx, wrapper);
+        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getIntFeature(namespace: string, key: string, ctx: ClientContext): Promise<bigint> {
+    async getIntFeature(namespace: string, key: string, ctx?: ClientContext): Promise<bigint> {
         const wrapper = new Int64Value();
-        await this.evaluateAndUnpack(namespace, key, ctx, wrapper);
+        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getFloatFeature(namespace: string, key: string, ctx: ClientContext): Promise<number> {
+    async getFloatFeature(namespace: string, key: string, ctx?: ClientContext): Promise<number> {
         const wrapper = new DoubleValue();
-        await this.evaluateAndUnpack(namespace, key, ctx, wrapper);
+        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getStringFeature(namespace: string, key: string, ctx: ClientContext): Promise<string> {
+    async getStringFeature(namespace: string, key: string, ctx?: ClientContext): Promise<string> {
         const wrapper = new StringValue();
-        await this.evaluateAndUnpack(namespace, key, ctx, wrapper);
+        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async getJSONFeature(namespace: string, key: string, ctx: ClientContext): Promise<any> {
+    async getJSONFeature(namespace: string, key: string, ctx?: ClientContext): Promise<any> {
         const wrapper = new Value();
-        await this.evaluateAndUnpack(namespace, key, ctx, wrapper);
+        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return JSON.parse(wrapper.toJsonString());
     }
-    async getProtoFeature(namespace: string, key: string, ctx: ClientContext): Promise<Any> {
+    async getProtoFeature(namespace: string, key: string, ctx?: ClientContext): Promise<Any> {
         const result = this.store.evaluateType(namespace, key, ctx);
-        this.track(namespace, key, ctx, result);
+        this.track(namespace, key, result, ctx);
         return result.evalResult.value;
     }
 
     async evaluateAndUnpack(
         namespace: string, 
-        configKey: string, 
-        ctx: ClientContext, 
+        configKey: string,  
         wrapper: BoolValue | StringValue | Int64Value | DoubleValue | Value,
+        ctx?: ClientContext,
     ) {
         const result = this.store.evaluateType(namespace, configKey, ctx);
         if (!result.evalResult.value.unpackTo(wrapper)) {
             throw new Error('type mismatch');
         }
-        this.track(namespace, configKey, ctx, result);
+        this.track(namespace, configKey, result, ctx);
     }
 
-    track(namespace: string, key: string, ctx: ClientContext, result: StoredEvalResult) {
+    track(namespace: string, key: string, result: StoredEvalResult, ctx?: ClientContext) {
         if (!this.eventsBatcher) {
             return;
         }
