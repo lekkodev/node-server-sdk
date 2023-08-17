@@ -58,7 +58,7 @@ async function initClient() {
                 apiKey: opts.apikey,
                 repositoryOwner: opts.ownerName,
                 repositoryName: opts.repoName,
-                updateIntervalMs: 3 * 1000,
+                updateIntervalMs: 10 * 1000,
                 serverPort: serverPort,
                 hostname: hostname,
                 transportProtocol: transportProtocol(),
