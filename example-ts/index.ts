@@ -34,7 +34,7 @@ async function initClient() {
     const serverPort = parseInt(opts.serverPort);
     switch (opts.type) {
         case 'api':
-            if (opts.apiKey.length == 0) {
+            if (opts.apikey.length == 0) {
                 throw new Error('no apikey provided');
             }
             client = await initAPIClient({
