@@ -102,7 +102,8 @@ export class Git implements Client {
         await this.evaluateAndUnpack(namespace, key, ctx, wrapper);
         return wrapper.value;
     }
-    async getJSONFeature(namespace: string, key: string, ctx: ClientContext): Promise<object> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async getJSONFeature(namespace: string, key: string, ctx: ClientContext): Promise<any> {
         const wrapper = new Value();
         await this.evaluateAndUnpack(namespace, key, ctx, wrapper);
         return JSON.parse(wrapper.toJsonString());

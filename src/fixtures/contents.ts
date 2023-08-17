@@ -28,10 +28,15 @@ export function protoAny() {
     return Any.pack(protoVal);
 }
 
+export type jsonConfigType = {
+    a: number;
+}
+
 export function testContents() {
-    const jsonVal = Value.fromJsonString(JSON.stringify({
+    const json: jsonConfigType = {
         a: 1
-    }));
+    };
+    const jsonVal = Value.fromJsonString(JSON.stringify(json));
     const pAny = protoAny();
     return contents(
         'sha', 
