@@ -110,23 +110,21 @@ async function getConfig(client: Client) {
     throw new Error(`unknown config type '${opts.configType}' `);
 }
 
-function sleep(ms: number) {
+async function sleep(ms: number) {
     return new Promise((resolve) => {
         setTimeout(resolve, ms);
     });
 }
 
+async function main() {
+    const client = await initClient();
+    const config = await getConfig(client);
+    // eslint-disable-next-line no-console
+    console.log(`${opts.ownerName}/${opts.repoName}/${opts.namespace}/${opts.config} [${opts.configType}]: ${config}`);
+    await sleep(sleepMs * 1000);
+    await client.close();
+}
 
-initClient()
-    .then((c) => {
-        getConfig(c)
-            .then(config => {
-                // eslint-disable-next-line no-console
-                console.log(`${opts.ownerName}/${opts.repoName}/${opts.namespace}/${opts.config} [${opts.configType}]: ${config}`);
-                sleep(sleepMs * 1000).then(() => {
-                    c.close().then(() => { return; });
-                });
-
-            });
-    });
-
+main().finally(() => {
+    process.exit();
+});
