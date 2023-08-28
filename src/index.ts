@@ -51,7 +51,7 @@ type BackendOptions = {
   serverPort?: number,
 }
 
-const defaultUpdateIntervalMs = 30 * 1000; // 30s
+const defaultUpdateIntervalMs = 15 * 1000; // 15s
 
 async function initCachedAPIClient(options: BackendOptions): Promise<Client> {
   const transport = await new ClientTransportBuilder({
