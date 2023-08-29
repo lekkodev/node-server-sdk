@@ -67,15 +67,15 @@ test('test backend', async () => {
     expect(registerCalls[0].length).toEqual(1);
     expect(registerCalls[0][0].sidecarVersion).toEqual(defaultVersion);
 
-    expect(await backend.getBoolFeature('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
-    expect(await backend.getIntFeature('ns-1', 'int', new ClientContext().setInt('key', 12))).toEqual(BigInt(12));
-    expect(await backend.getFloatFeature('ns-1', 'float', new ClientContext().setDouble('key', 12.12))).toEqual(12.28);
-    expect(await backend.getStringFeature('ns-1', 'string', new ClientContext().setString('key', 'foo'))).toEqual('hello');
-    expect(await backend.getJSONFeature('ns-1', 'json', new ClientContext())).toEqual({a: 1});
-    expect(await backend.getProtoFeature('ns-1', 'proto', new ClientContext())).toEqual(protoAny());
+    expect(await backend.getBool('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
+    expect(await backend.getInt('ns-1', 'int', new ClientContext().setInt('key', 12))).toEqual(BigInt(12));
+    expect(await backend.getFloat('ns-1', 'float', new ClientContext().setDouble('key', 12.12))).toEqual(12.28);
+    expect(await backend.getString('ns-1', 'string', new ClientContext().setString('key', 'foo'))).toEqual('hello');
+    expect(await backend.getJSON('ns-1', 'json', new ClientContext())).toEqual({a: 1});
+    expect(await backend.getProto('ns-1', 'proto', new ClientContext())).toEqual(protoAny());
 
     expect(async () => {
-        await backend.getBoolFeature('ns-1', 'int', new ClientContext()); // type mismatch
+        await backend.getBool('ns-1', 'int', new ClientContext()); // type mismatch
     }).rejects.toThrow();
 
     const listResp = backend.store.listContents();
@@ -129,7 +129,7 @@ test('send metrics error', async () => {
     });
 
     await backend.initialize();
-    expect(await backend.getBoolFeature('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
+    expect(await backend.getBool('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
     await backend.close();
 
     expect(mockSendEvents.mock.calls.length).toEqual(1);
@@ -148,8 +148,8 @@ test('send metrics batch size', async () => {
     });
 
     await backend.initialize();
-    expect(await backend.getBoolFeature('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
-    expect(await backend.getBoolFeature('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
+    expect(await backend.getBool('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
+    expect(await backend.getBool('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
     await backend.close();
     expect(mockSendEvents.mock.calls.length).toEqual(2);
     expect(backend.eventsBatcher.batch.length).toEqual(0);
@@ -167,7 +167,7 @@ test('test json return type', async () => {
 
     await backend.initialize();
 
-    const result: jsonConfigType = await backend.getJSONFeature('ns-1', 'json', new ClientContext());
+    const result: jsonConfigType = await backend.getJSON('ns-1', 'json', new ClientContext());
     expect(result).toEqual({a: 1});
 
     await backend.close();
@@ -185,7 +185,7 @@ test('test empty context', async () => {
 
     await backend.initialize();
 
-    const result = await backend.getBoolFeature('ns-1', 'bool');
+    const result = await backend.getBool('ns-1', 'bool');
     expect(result).toEqual(true);
 
     await backend.close();

@@ -48,33 +48,33 @@ export class Backend implements Client {
         this.server = new SDKServer(this.store, port);
     }
 
-    async getBoolFeature(namespace: string, key: string, ctx?: ClientContext): Promise<boolean> {
+    async getBool(namespace: string, key: string, ctx?: ClientContext): Promise<boolean> {
         const wrapper = new BoolValue();
         await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getIntFeature(namespace: string, key: string, ctx?: ClientContext): Promise<bigint> {
+    async getInt(namespace: string, key: string, ctx?: ClientContext): Promise<bigint> {
         const wrapper = new Int64Value();
         await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getFloatFeature(namespace: string, key: string, ctx?: ClientContext): Promise<number> {
+    async getFloat(namespace: string, key: string, ctx?: ClientContext): Promise<number> {
         const wrapper = new DoubleValue();
         await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getStringFeature(namespace: string, key: string, ctx?: ClientContext): Promise<string> {
+    async getString(namespace: string, key: string, ctx?: ClientContext): Promise<string> {
         const wrapper = new StringValue();
         await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async getJSONFeature(namespace: string, key: string, ctx?: ClientContext): Promise<any> {
+    async getJSON(namespace: string, key: string, ctx?: ClientContext): Promise<any> {
         const wrapper = new Value();
         await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return JSON.parse(wrapper.toJsonString());
     }
-    async getProtoFeature(namespace: string, key: string, ctx?: ClientContext): Promise<Any> {
+    async getProto(namespace: string, key: string, ctx?: ClientContext): Promise<Any> {
         const result = this.store.evaluateType(namespace, key, ctx);
         this.track(namespace, key, result, ctx);
         return result.evalResult.value;

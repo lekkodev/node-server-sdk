@@ -98,12 +98,12 @@ async function getConfig(client: Client) {
     const ns = opts.namespace;
     const key = opts.config;
     switch (opts.configType) {
-        case 'bool': return await client.getBoolFeature(ns, key);
-        case 'string': return await client.getStringFeature(ns, key);
-        case 'int': return await client.getIntFeature(ns, key);
-        case 'float': return await client.getFloatFeature(ns, key);
-        case 'json': return await client.getJSONFeature(ns, key);
-        case 'proto': return await client.getProtoFeature(ns, key);
+        case 'bool': return await client.getBool(ns, key);
+        case 'string': return await client.getString(ns, key);
+        case 'int': return await client.getInt(ns, key);
+        case 'float': return await client.getFloat(ns, key);
+        case 'json': return await client.getJSON(ns, key);
+        case 'proto': return await client.getProto(ns, key);
     }
     throw new Error(`unknown config type '${opts.configType}' `);
 }

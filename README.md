@@ -50,8 +50,8 @@ const client = await lekko.initCachedAPIClient({
 });
 
 const context = new lekko.ClientContext().setString("my_context_key", "my_context_value");
-const stringFeature = await client.getStringFeature("my_namespace", "my_feature", context);
-console.log(stringFeature);
+const stringConfig = await client.getString("my_namespace", "my_config", context);
+console.log(stringConfig);
 ```
 
 #### Initializing a cached Lekko client in git mode
@@ -69,8 +69,8 @@ const client = await lekko.initCachedGitClient({
 });
 
 const context = new lekko.ClientContext().setString("my_context_key", "my_context_value");
-const boolFeature = await client.getBoolFeature("default", "example", context);
-console.log(boolFeature);
+const boolConfig = await client.getBool("default", "example", context);
+console.log(boolConfig);
 ```
 
 #### Note on using ES modules
