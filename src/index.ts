@@ -6,6 +6,7 @@ import { Backend } from './memory/backend';
 import { Git } from './memory/git';
 import { ClientTransportBuilder, TransportProtocol } from './transport-builder';
 import { Client } from './types/client';
+import { version } from './version';
 
 type APIOptions = {
   apiKey: string
@@ -63,6 +64,7 @@ async function initCachedAPIClient(options: BackendOptions): Promise<Client> {
     transport, 
     options.repositoryOwner, 
     options.repositoryName, 
+    sdkVersion(),
     options.updateIntervalMs ?? defaultUpdateIntervalMs, 
     options.serverPort,
   );
@@ -97,13 +99,19 @@ async function initCachedGitClient(options: GitOptions): Promise<Client> {
     options.repositoryOwner, 
     options.repositoryName, 
     options.path, 
-    true, 
+    true,
+    sdkVersion(),
     transport, 
     undefined, 
     options.serverPort,
   );
   await client.initialize();
   return client;
+}
+
+function sdkVersion() : string {
+  const v = (version.startsWith('v')) ? version : `v${version}`;
+  return 'node-' + v;
 }
 
 export { ClientContext, TransportClient, TransportProtocol, Value, initAPIClient, initCachedAPIClient, initCachedGitClient, initSidecarClient, type Client };

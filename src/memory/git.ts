@@ -34,12 +34,14 @@ export class Git implements Client {
     loader: configLoader;
     shouldWatch: boolean;
     server: SDKServer;
+    version: string;
 
     constructor(
         repositoryOwner: string,
         repositoryName: string,
         path: string,
         shouldWatch: boolean,
+        version: string,
         transport?: Transport,
         useFS?: IFS,
         port?: number,
@@ -54,6 +56,7 @@ export class Git implements Client {
             repoName: repositoryName
         });
         this.path = path;
+        this.version = version;
         this.loader = new configLoader(path, useFS);
         this.shouldWatch = shouldWatch;
         this.server = new SDKServer(this.store, port);
@@ -65,6 +68,7 @@ export class Git implements Client {
                 if (this.distClient) {
                     return this.distClient.registerClient({
                         repoKey: this.repoKey,
+                        sidecarVersion: this.version,
                     });
                 }
                 return (async () => new RegisterClientResponse())();
