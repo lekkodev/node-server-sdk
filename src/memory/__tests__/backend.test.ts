@@ -3,6 +3,7 @@ import { ClientContext } from "../../context/context";
 import { jsonConfigType, protoAny, testContents } from '../../fixtures/contents';
 import { ClientTransportBuilder, TransportProtocol } from "../../transport-builder";
 import { Backend } from "../backend";
+import { defaultVersion } from "./git.test";
 
 async function setupBackend()  {
     const transport = await new ClientTransportBuilder({
@@ -11,7 +12,7 @@ async function setupBackend()  {
         apiKey: 'apikey'
     }).build();
     const sessionKey = 'session-key';
-    const backend = new Backend(transport, 'owner', 'repo', 30 * 1000);
+    const backend = new Backend(transport, 'owner', 'repo', defaultVersion, 30 * 1000);
     backend.eventsBatcher.backoffOptions = { numOfAttempts: 1 };
     const mockRegister = jest.fn();
     Object.defineProperty(backend.distClient, "registerClient", { value: mockRegister });
@@ -42,6 +43,7 @@ async function setupBackend()  {
 
     return {
         backend,
+        mockRegister,
     };
 }
 
@@ -50,6 +52,7 @@ test('test backend', async () => {
 
     const testBackend = await setupBackend();
     const backend = testBackend.backend;
+    const mockRegister = testBackend.mockRegister;
 
     const mockSendEvents = jest.fn();
     Object.defineProperty(backend.distClient, "sendFlagEvaluationMetrics", { value: mockSendEvents });
@@ -58,6 +61,11 @@ test('test backend', async () => {
     });
 
     await backend.initialize();
+
+    const registerCalls = mockRegister.mock.calls;
+    expect(registerCalls.length).toEqual(1);
+    expect(registerCalls[0].length).toEqual(1);
+    expect(registerCalls[0][0].sidecarVersion).toEqual(defaultVersion);
 
     expect(await backend.getBoolFeature('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
     expect(await backend.getIntFeature('ns-1', 'int', new ClientContext().setInt('key', 12))).toEqual(BigInt(12));

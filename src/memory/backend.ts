@@ -25,11 +25,13 @@ export class Backend implements Client {
     timeout?: NodeJS.Timeout;
     eventsBatcher: EventsBatcher;
     server: SDKServer;
+    version: string;
 
     constructor(
         transport: Transport,
         repositoryOwner: string,
         repositoryName: string,
+        version: string,
         updateIntervalMs?: number,
         port?: number,
     ) {
@@ -41,6 +43,7 @@ export class Backend implements Client {
         });
         this.updateIntervalMs = updateIntervalMs;
         this.closed = false;
+        this.version = version;
         this.eventsBatcher = new EventsBatcher(this.distClient, eventsBatchSize);
         this.server = new SDKServer(this.store, port);
     }
@@ -109,7 +112,7 @@ export class Backend implements Client {
     async initialize() {
         const registerResponse = await backOff(() => this.distClient.registerClient({
             repoKey: this.repoKey,
-            // TODO: add sdk version to this request
+            sidecarVersion: this.version,
         }));
         this.sessionKey = registerResponse.sessionKey;
         await this.updateStore();

@@ -8,6 +8,8 @@ import { protoAny, testContents } from "../../fixtures/contents";
 import { ClientTransportBuilder, TransportProtocol } from "../../transport-builder";
 import { Git, RootConfigMetadata } from "../git";
 
+export const defaultVersion = 'test';
+
 async function setupFS() {
     const contents = testContents();
     const md : RootConfigMetadata = {
@@ -55,7 +57,7 @@ async function setupClient() {
     const { fs, sha } = await setupFS();
     // Exp for use of 'any': https://github.com/streamich/unionfs/issues/453
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const client = new Git('owner', 'repo', '/config', false, transport, fs as any);
+    const client = new Git('owner', 'repo', '/config', false, defaultVersion, transport, fs as any);
     if (client.distClient) {
         const mockRegister = jest.fn();
         Object.defineProperty(client.distClient, "registerClient", { value: mockRegister });
