@@ -19,6 +19,8 @@ async function setupFS() {
     const mdStr = dump(md);
     const { vol } = memfs();
     vol.mkdirSync('/config', { recursive: true});
+    // add an empty namespace to make sure we can handle it
+    vol.mkdirSync(`/config/empty-ns`, { recursive: true });
     const fs = createFsFromVolume(vol);
     await git.init({fs, dir: '/config'});
     vol.writeFileSync('/config/lekko.root.yaml', mdStr);

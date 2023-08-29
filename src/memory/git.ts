@@ -198,11 +198,6 @@ class configLoader {
 
     async getCommitSha() {
         return await git.resolveRef({fs: this.fs, dir: this.path, ref: 'HEAD'});
-        // const lg = await git.log({fs: this.fs, dir: this.path});
-        // if (lg.length == 0) {
-        //     throw new Error('config repo has no git history');
-        // }
-        // return lg[0].oid;
     }
 
     async getNamespaces() : Promise<Namespace[]> {
@@ -211,7 +206,7 @@ class configLoader {
             this.fs.readFile(mdFilePath, {encoding: 'utf-8'}, async (err, mdContents) => {
                 const yaml = load(mdContents) as RootConfigMetadata;
                 const nsNames = yaml.namespaces;
-                resolve(Promise.all(nsNames.map(async (nsName) => {
+                return resolve(Promise.all(nsNames.map(async (nsName) => {
                     return new Namespace({
                         name: nsName,
                         features: await this.getConfigs(nsName),
@@ -222,14 +217,14 @@ class configLoader {
     }
 
     async getConfigs(nsName: string) : Promise<DistFeature[]> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const protoDirPath = path.join(this.path, nsName, 'gen', 'proto');
             this.fs.stat(protoDirPath, (err, stats) => {
-                if (!stats.isDirectory()) {
-                    reject(`path ${protoDirPath} is not a directory`);
+                if (!stats || !stats.isDirectory()) {
+                    return resolve([]);
                 }
                 this.fs.readdir(protoDirPath, (err, dirContents) => {
-                    resolve(Promise.all(dirContents
+                    return resolve(Promise.all(dirContents
                         .filter((file) => file.endsWith('.proto.bin'))
                         .map(async (file) => {
                             return await this.getConfig(protoDirPath, file);
@@ -244,7 +239,7 @@ class configLoader {
         const filepath = path.join(protoDirPath, file);
         return new Promise((resolve) => {
             this.fs.readFile(filepath, async (err, fileContents) => {
-                resolve(new DistFeature({
+                return resolve(new DistFeature({
                     name: file.replace('.proto.bin', ''),
                     sha: (await git.hashBlob({
                         object: fileContents
