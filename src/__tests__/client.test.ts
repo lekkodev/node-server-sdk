@@ -48,7 +48,7 @@ test('build gRPC client', async () => {
 const SAMPLE_CONTEXT = new ClientContext();
 SAMPLE_CONTEXT.setString('sample_key', 'sample_value');
 
-test('get bool feature', async () => {
+test('get bool config', async () => {
   const client = await initAPIClient({
     apiKey: "apiKey",
     repositoryOwner: "lekkodev",
@@ -63,7 +63,7 @@ test('get bool feature', async () => {
   jest.spyOn(client.client, "getBoolValue").mockImplementation(async () => GetBoolValueResponse.fromJson({
     value: true,
   }));
-  expect(await client.getBoolFeature('types', 'bool', SAMPLE_CONTEXT)).toBe(true);
+  expect(await client.getBool('types', 'bool', SAMPLE_CONTEXT)).toBe(true);
   expect(mockFn.mock.lastCall[0]).toEqual(GetBoolValueRequest.fromJson({
     key: 'bool',
     context: {
@@ -79,7 +79,7 @@ test('get bool feature', async () => {
   }));
 });
 
-test('get int feature', async () => {
+test('get int config', async () => {
   const client = await initAPIClient({
     apiKey: "apiKey",
     repositoryOwner: "lekkodev",
@@ -94,7 +94,7 @@ test('get int feature', async () => {
   jest.spyOn(client.client, "getIntValue").mockImplementation(async () => new GetIntValueResponse({
     value: BigInt(42),
   }));
-  expect(await client.getIntFeature('types', 'int', SAMPLE_CONTEXT)).toEqual(BigInt(42));
+  expect(await client.getInt('types', 'int', SAMPLE_CONTEXT)).toEqual(BigInt(42));
   expect(mockFn.mock.lastCall[0]).toEqual(GetIntValueRequest.fromJson({
     key: 'int',
     context: {
@@ -110,7 +110,7 @@ test('get int feature', async () => {
   }));
 });
 
-test('get float feature', async () => {
+test('get float config', async () => {
   const client = await initAPIClient({
     apiKey: "apiKey",
     repositoryOwner: "lekkodev",
@@ -125,7 +125,7 @@ test('get float feature', async () => {
   jest.spyOn(client.client, "getFloatValue").mockImplementation(async () => GetFloatValueResponse.fromJson({
     value: 3.14,
   }));
-  expect(await client.getFloatFeature('types', 'float', SAMPLE_CONTEXT)).toBeCloseTo(3.14);
+  expect(await client.getFloat('types', 'float', SAMPLE_CONTEXT)).toBeCloseTo(3.14);
   expect(mockFn.mock.lastCall[0]).toEqual(GetFloatValueRequest.fromJson({
     key: 'float',
     context: {
@@ -141,7 +141,7 @@ test('get float feature', async () => {
   }));
 });
 
-test('get json feature', async () => {
+test('get json config', async () => {
   const client = await initAPIClient({
     apiKey: "apiKey",
     repositoryOwner: "lekkodev",
@@ -162,7 +162,7 @@ test('get json feature', async () => {
   jest.spyOn(client.client, "getJSONValue").mockImplementation(async () => GetJSONValueResponse.fromJson({
     value: Buffer.from(JSON.stringify(mockedValue)).toString('base64'),
   }));
-  expect(await client.getJSONFeature('types', 'json', SAMPLE_CONTEXT)).toEqual(mockedValue);
+  expect(await client.getJSON('types', 'json', SAMPLE_CONTEXT)).toEqual(mockedValue);
   expect(mockFn.mock.lastCall[0]).toEqual(GetJSONValueRequest.fromJson({
     key: 'json',
     context: {
@@ -178,7 +178,7 @@ test('get json feature', async () => {
   }));
 });
 
-test('get string feature', async () => {
+test('get string config', async () => {
   const client = await initAPIClient({
     apiKey: "apiKey",
     repositoryOwner: "lekkodev",
@@ -193,7 +193,7 @@ test('get string feature', async () => {
   jest.spyOn(client.client, "getStringValue").mockImplementation(async () => GetStringValueResponse.fromJson({
     value: 'foobar',
   }));
-  expect(await client.getStringFeature('types', 'string', SAMPLE_CONTEXT)).toBe('foobar');
+  expect(await client.getString('types', 'string', SAMPLE_CONTEXT)).toBe('foobar');
   expect(mockFn.mock.lastCall[0]).toEqual(GetStringValueRequest.fromJson({
     key: 'string',
     context: {
@@ -209,7 +209,7 @@ test('get string feature', async () => {
   }));
 });
 
-test('get proto feature', async () => {
+test('get proto config', async () => {
   const a = Any.pack(new BoolValue({
     value: true
   }));
@@ -226,7 +226,7 @@ test('get proto feature', async () => {
       writable: true
     });
     jest.spyOn(client.client, "getProtoValue").mockImplementation(async () => resp);
-    expect(await client.getProtoFeature('types', 'proto', SAMPLE_CONTEXT)).toEqual(a);
+    expect(await client.getProto('types', 'proto', SAMPLE_CONTEXT)).toEqual(a);
     expect(mockFn.mock.lastCall[0]).toEqual(GetProtoValueRequest.fromJson({
       key: 'proto',
       context: {

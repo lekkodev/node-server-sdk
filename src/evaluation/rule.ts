@@ -72,10 +72,10 @@ export default function evaluateRule(rule: Rule | undefined, namespace: string, 
     throw new Error('unknown rule type');
 }
 
-// If the hashed feature value % 100 <= threshold, it fits in the "bucket".
+// If the hashed config value % 100 <= threshold, it fits in the "bucket".
 // In reality, we internally store the threshold as an integer in [0,100000]
 // to account for up to 3 decimal places.
-// The feature value is salted using the namespace, feature name, and context key.
+// The config value is salted using the namespace, config name, and context key.
 function evaluateBucket(bucketF: CallExpression_Bucket, namespace: string, configName: string, context?: ClientContext) : boolean {
     const ctxKey = bucketF.contextKey;
     const value = context && context.get(ctxKey);
