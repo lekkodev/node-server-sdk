@@ -1,9 +1,10 @@
 import { type Transport } from "@bufbuild/connect";
-import { createConnectTransport, createGrpcTransport } from "@bufbuild/connect-node";
+import { createGrpcWebTransport, createConnectTransport, createGrpcTransport } from "@bufbuild/connect-node";
 
 export enum TransportProtocol {
   HTTP,
   gRPC,
+  gRPCWeb
 }
 
 const APIKEY_INTERCEPTOR = (apiKey?: string) => (next: any) => async (req: any) => {
@@ -30,6 +31,16 @@ export class ClientTransportBuilder {
         throw new Error("API Key required");
       }
       return createConnectTransport({
+        baseUrl: this.hostname,
+        httpVersion: '2',
+        interceptors: [APIKEY_INTERCEPTOR(this.apiKey)],
+      });
+    }
+    if (this.protocol == TransportProtocol.gRPCWeb) {
+      if (this.apiKey === undefined) {
+        throw new Error("API Key required");
+      }
+      return createGrpcWebTransport({
         baseUrl: this.hostname,
         httpVersion: '2',
         interceptors: [APIKEY_INTERCEPTOR(this.apiKey)],
