@@ -7,15 +7,16 @@ import { PromiseClient, Transport, createPromiseClient } from '@bufbuild/connect
 import { Any, BoolValue, DoubleValue, Int64Value, StringValue, Timestamp, Value } from '@bufbuild/protobuf';
 import { backOff } from 'exponential-backoff';
 import { ClientContext } from '../context/context';
-import { Client } from '../types/client';
+import { Client, DevClient } from '../types/client';
 import { EventsBatcher, toContextKeysProto } from './events';
 import { SDKServer } from './server';
 import { Store, StoredEvalResult } from './store';
+import { ListContentsResponse } from '@buf/lekkodev_sdk.bufbuild_es/lekko/server/v1beta1/sdk_pb';
 
 const eventsBatchSize = 100;
 
 // An in-memory store that fetches configs from lekko's backend.
-export class Backend implements Client {
+export class Backend implements Client, DevClient {
     distClient: PromiseClient<typeof DistributionService>;
     store: Store;
     repoKey: RepositoryKey;
@@ -45,7 +46,7 @@ export class Backend implements Client {
         this.closed = false;
         this.version = version;
         this.eventsBatcher = new EventsBatcher(this.distClient, eventsBatchSize);
-        this.server = new SDKServer(this.store, port);
+        this.server = new SDKServer(this, port);
     }
 
     getBool(namespace: string, key: string, ctx?: ClientContext): boolean {
@@ -78,6 +79,10 @@ export class Backend implements Client {
         const result = this.store.evaluateType(namespace, key, ctx);
         this.track(namespace, key, result, ctx);
         return result.evalResult.value;
+    }
+
+    listContents(): ListContentsResponse {
+        return this.store.listContents();
     }
 
     evaluateAndUnpack(
@@ -120,6 +125,10 @@ export class Backend implements Client {
             await this.loop();
         }
         await this.eventsBatcher.init(this.sessionKey);
+    }
+    
+    async reinitialize(): Promise<void> {
+        return;
     }
 
     async loop() {

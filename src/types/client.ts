@@ -1,5 +1,6 @@
 import { Any } from "@bufbuild/protobuf";
 import { ClientContext } from "../context/context";
+import { ListContentsResponse } from '@buf/lekkodev_sdk.bufbuild_es/lekko/server/v1beta1/sdk_pb';
 
 export interface AsyncClient {
     getBool(namespace: string, key: string, ctx?: ClientContext): Promise<boolean>;
@@ -21,4 +22,9 @@ export interface Client {
   getJSON(namespace: string, key: string, ctx?: ClientContext): any;
   getProto(namespace: string, key: string, ctx?: ClientContext): Any;
   close(): Promise<void>;
+}
+
+export interface DevClient {
+    listContents(): ListContentsResponse;
+    reinitialize(options: { path?: string }): Promise<void>;
 }

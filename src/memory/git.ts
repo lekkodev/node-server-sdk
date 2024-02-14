@@ -13,18 +13,19 @@ import { load } from 'js-yaml';
 import watch, { Watcher } from 'node-watch';
 import { IFS, IUnionFs, ufs } from 'unionfs';
 import { ClientContext } from '../context/context';
-import { Client } from '../types/client';
+import { Client, DevClient } from '../types/client';
 import { EventsBatcher, toContextKeysProto } from './events';
 import { SDKServer } from './server';
 import { Store, StoredEvalResult } from './store';
 import * as path from 'path';
 import * as os from 'os';
+import { ListContentsResponse } from '@buf/lekkodev_sdk.bufbuild_es/lekko/server/v1beta1/sdk_pb';
 
 const eventsBatchSize = 100;
 const defaultRootConfigMetadataFilename = 'lekko.root.yaml';
 
 // An in-memory store that fetches configs from a path on the filesystem.
-export class Git implements Client {
+export class Git implements Client, DevClient {
     distClient?: PromiseClient<typeof DistributionService>;
     store: Store;
     repoKey: RepositoryKey;
@@ -34,6 +35,7 @@ export class Git implements Client {
     path: string;
     loader: configLoader;
     shouldWatch: boolean;
+    useFS?: IFS;
     server: SDKServer;
     version: string;
 
@@ -56,12 +58,12 @@ export class Git implements Client {
             ownerName: repositoryOwner,
             repoName: repositoryName
         });
-        // Resolve homedir (conventionally ~ on many shells)
-        this.path = path.replace(/^~(?=$|\/|\\)/, os.homedir());
+        this.path = this.resolveHomedir(path);
         this.version = version;
+        this.useFS = useFS;
         this.loader = new configLoader(this.path, useFS);
         this.shouldWatch = shouldWatch;
-        this.server = new SDKServer(this.store, port);
+        this.server = new SDKServer(this, port);
     }
 
     async initialize() {
@@ -85,6 +87,23 @@ export class Git implements Client {
             this.watcher = watch(this.path, { recursive: true }, async () => {
                 await this.load();
             });
+        }
+    }
+
+    async reinitialize({ path }: { path?: string }): Promise<void> {
+        if (path) {
+            path = this.resolveHomedir(path);
+            if (path !== this.path) {
+                this.path = path;
+                this.loader = new configLoader(this.path, this.useFS);
+                await this.load();
+                if (this.shouldWatch && this.watcher) {
+                    this.watcher.close();
+                    this.watcher = watch(this.path, { recursive: true }, async () => {
+                        await this.load();
+                    });
+                }
+            }
         }
     }
 
@@ -118,6 +137,10 @@ export class Git implements Client {
         const result = this.store.evaluateType(namespace, key, ctx);
         this.track(namespace, key, result, ctx);
         return result.evalResult.value;
+    }
+
+    listContents(): ListContentsResponse {
+        return this.store.listContents();
     }
 
     track(namespace: string, key: string, result: StoredEvalResult, ctx?: ClientContext) {
@@ -170,6 +193,11 @@ export class Git implements Client {
         if (this.watcher) {
             this.watcher.close();
         }
+    }
+
+    // Resolve homedir in path to absolute (conventionally ~ on many platforms)
+    resolveHomedir(path: string): string {
+        return path.replace(/^~(?=$|\/|\\)/, os.homedir());
     }
 }
 
