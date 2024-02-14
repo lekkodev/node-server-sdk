@@ -5,8 +5,9 @@ import { ClientContext } from './context/context';
 import { Backend } from './memory/backend';
 import { Git } from './memory/git';
 import { ClientTransportBuilder, TransportProtocol } from './transport-builder';
-import { Client } from './types/client';
+import { AsyncClient, Client } from './types/client';
 import { version } from './version';
+import { spawnSync } from 'child_process';
 
 type APIOptions = {
   apiKey: string
@@ -16,7 +17,7 @@ type APIOptions = {
   transportProtocol?: TransportProtocol
 }
 
-async function initAPIClient(options: APIOptions): Promise<Client> {
+async function initAPIClient(options: APIOptions): Promise<AsyncClient> {
   const transport = await new ClientTransportBuilder(
     {
       hostname: options.hostname ?? "https://prod.api.lekko.dev",
@@ -33,7 +34,7 @@ type SidecarOptions = {
   transportProtocol?: TransportProtocol
 }
 
-async function initSidecarClient(options: SidecarOptions): Promise<Client> {
+async function initSidecarClient(options: SidecarOptions): Promise<AsyncClient> {
   const transport = await new ClientTransportBuilder(
     {
       hostname: options.hostname ?? "http://localhost:50051",
@@ -109,10 +110,63 @@ async function initCachedGitClient(options: GitOptions): Promise<Client> {
   return client;
 }
 
+type LocalOptions = {
+  path: string
+  serverPort?: number
+}
+
+/**
+ * Initializes a Lekko client that will read from a local or remote repository based on
+ * the options provided.
+ */
+async function initClient(options?: LocalOptions | BackendOptions): Promise<Client> {
+  if (options !== undefined && "apiKey" in options) {
+    const transport = await new ClientTransportBuilder({
+      hostname: options.hostname ?? "https://prod.api.lekko.dev",
+      protocol: options.transportProtocol ?? TransportProtocol.HTTP,
+      apiKey: options.apiKey
+    }).build();
+    const client = new Backend(
+      transport, 
+      options.repositoryOwner, 
+      options.repositoryName, 
+      sdkVersion(),
+      options.updateIntervalMs ?? defaultUpdateIntervalMs,
+      options.serverPort,
+    );
+    await client.initialize();
+    return client;
+  } else {
+    let path = "";
+    if (options !== undefined && "path" in options) {
+      path = options.path;
+    } else if (options === undefined || !("path" in options)) {
+      // Invoke Lekko CLI to ensure default path location presence
+      const defaultInit = spawnSync("lekko", ["repo", "init-default"], { encoding: "utf-8" });
+      if (defaultInit.error !== undefined || defaultInit.status !== 0) {
+        throw new Error("Failed to initialize default Lekko repo. Try upgrading the Lekko CLI.");
+      }
+      path = "~/Library/Application Support/Lekko/Config Repositories/default";
+    } 
+    const client = new Git(
+      "", 
+      "", 
+      path, 
+      true,
+      sdkVersion(),
+      undefined, 
+      undefined, 
+      options?.serverPort,
+    );
+    await client.initialize();
+    return client;
+  }
+}
+
 function sdkVersion() : string {
   const v = (version.startsWith('v')) ? version : `v${version}`;
   return 'node-' + v;
 }
 
-export { ClientContext, TransportClient, TransportProtocol, Value, initAPIClient, initCachedAPIClient, initCachedGitClient, initSidecarClient, type Client };
+export { ClientContext, TransportClient, TransportProtocol, Value, initClient, initAPIClient, initCachedAPIClient, initCachedGitClient, initSidecarClient, type Client, type AsyncClient };
 

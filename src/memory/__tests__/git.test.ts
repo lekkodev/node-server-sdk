@@ -84,12 +84,12 @@ test('test git', async () => {
     const { client, sha } = await setupClient();
     await client.initialize();
     expect(client.store.getCommitSHA()).toEqual(sha);
-    expect(await client.getBool('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
-    expect(await client.getInt('ns-1', 'int', new ClientContext().setInt('key', 12))).toEqual(BigInt(12));
-    expect(await client.getFloat('ns-1', 'float', new ClientContext().setDouble('key', 12.12))).toEqual(12.28);
-    expect(await client.getString('ns-1', 'string', new ClientContext().setString('key', 'foo'))).toEqual('hello');
-    expect(await client.getJSON('ns-1', 'json', new ClientContext())).toEqual({a: 1});
-    expect(proto3.util.equals(Any, await client.getProto('ns-1', 'proto', new ClientContext()), protoAny())).toBeTruthy();
+    expect(client.getBool('ns-1', 'bool', new ClientContext().setBoolean('key', true))).toEqual(true);
+    expect(client.getInt('ns-1', 'int', new ClientContext().setInt('key', 12))).toEqual(BigInt(12));
+    expect(client.getFloat('ns-1', 'float', new ClientContext().setDouble('key', 12.12))).toEqual(12.28);
+    expect(client.getString('ns-1', 'string', new ClientContext().setString('key', 'foo'))).toEqual('hello');
+    expect(client.getJSON('ns-1', 'json', new ClientContext())).toEqual({a: 1});
+    expect(proto3.util.equals(Any, client.getProto('ns-1', 'proto', new ClientContext()), protoAny())).toBeTruthy();
     await client.close();
 });
 

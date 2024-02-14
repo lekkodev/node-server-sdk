@@ -48,39 +48,39 @@ export class Backend implements Client {
         this.server = new SDKServer(this.store, port);
     }
 
-    async getBool(namespace: string, key: string, ctx?: ClientContext): Promise<boolean> {
+    getBool(namespace: string, key: string, ctx?: ClientContext): boolean {
         const wrapper = new BoolValue();
-        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
+        this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getInt(namespace: string, key: string, ctx?: ClientContext): Promise<bigint> {
+    getInt(namespace: string, key: string, ctx?: ClientContext): bigint {
         const wrapper = new Int64Value();
-        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
+        this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getFloat(namespace: string, key: string, ctx?: ClientContext): Promise<number> {
+    getFloat(namespace: string, key: string, ctx?: ClientContext): number {
         const wrapper = new DoubleValue();
-        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
+        this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getString(namespace: string, key: string, ctx?: ClientContext): Promise<string> {
+    getString(namespace: string, key: string, ctx?: ClientContext): string {
         const wrapper = new StringValue();
-        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
+        this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async getJSON(namespace: string, key: string, ctx?: ClientContext): Promise<any> {
+    getJSON(namespace: string, key: string, ctx?: ClientContext): any {
         const wrapper = new Value();
-        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
+        this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return JSON.parse(wrapper.toJsonString());
     }
-    async getProto(namespace: string, key: string, ctx?: ClientContext): Promise<Any> {
+    getProto(namespace: string, key: string, ctx?: ClientContext): Any {
         const result = this.store.evaluateType(namespace, key, ctx);
         this.track(namespace, key, result, ctx);
         return result.evalResult.value;
     }
 
-    async evaluateAndUnpack(
+    evaluateAndUnpack(
         namespace: string, 
         configKey: string,  
         wrapper: BoolValue | StringValue | Int64Value | DoubleValue | Value,

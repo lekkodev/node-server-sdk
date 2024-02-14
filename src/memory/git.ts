@@ -17,7 +17,8 @@ import { Client } from '../types/client';
 import { EventsBatcher, toContextKeysProto } from './events';
 import { SDKServer } from './server';
 import { Store, StoredEvalResult } from './store';
-import path = require('node:path');
+import * as path from 'path';
+import * as os from 'os';
 
 const eventsBatchSize = 100;
 const defaultRootConfigMetadataFilename = 'lekko.root.yaml';
@@ -55,9 +56,10 @@ export class Git implements Client {
             ownerName: repositoryOwner,
             repoName: repositoryName
         });
-        this.path = path;
+        // Resolve homedir (conventionally ~ on many shells)
+        this.path = path.replace(/^~(?=$|\/|\\)/, os.homedir());
         this.version = version;
-        this.loader = new configLoader(path, useFS);
+        this.loader = new configLoader(this.path, useFS);
         this.shouldWatch = shouldWatch;
         this.server = new SDKServer(this.store, port);
     }
@@ -86,33 +88,33 @@ export class Git implements Client {
         }
     }
 
-    async getBool(namespace: string, key: string, ctx?: ClientContext): Promise<boolean> {
+    getBool(namespace: string, key: string, ctx?: ClientContext): boolean {
         const wrapper = new BoolValue();
-        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
+        this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getInt(namespace: string, key: string, ctx?: ClientContext): Promise<bigint> {
+    getInt(namespace: string, key: string, ctx?: ClientContext): bigint {
         const wrapper = new Int64Value();
-        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
+        this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getFloat(namespace: string, key: string, ctx?: ClientContext): Promise<number> {
+    getFloat(namespace: string, key: string, ctx?: ClientContext): number {
         const wrapper = new DoubleValue();
-        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
+        this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
-    async getString(namespace: string, key: string, ctx?: ClientContext): Promise<string> {
+    getString(namespace: string, key: string, ctx?: ClientContext): string {
         const wrapper = new StringValue();
-        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
+        this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return wrapper.value;
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    async getJSON(namespace: string, key: string, ctx?: ClientContext): Promise<any> {
+    getJSON(namespace: string, key: string, ctx?: ClientContext): any {
         const wrapper = new Value();
-        await this.evaluateAndUnpack(namespace, key, wrapper, ctx);
+        this.evaluateAndUnpack(namespace, key, wrapper, ctx);
         return JSON.parse(wrapper.toJsonString());
     }
-    async getProto(namespace: string, key: string, ctx?: ClientContext): Promise<Any> {
+    getProto(namespace: string, key: string, ctx?: ClientContext): Any {
         const result = this.store.evaluateType(namespace, key, ctx);
         this.track(namespace, key, result, ctx);
         return result.evalResult.value;
@@ -134,7 +136,7 @@ export class Git implements Client {
         }));
     }    
 
-    async evaluateAndUnpack(
+    evaluateAndUnpack(
         namespace: string, 
         configKey: string, 
         wrapper: BoolValue | StringValue | Int64Value | DoubleValue | Value,
@@ -197,7 +199,11 @@ class configLoader {
     }
 
     async getCommitSha() {
-        return await git.resolveRef({fs: this.fs, dir: this.path, ref: 'HEAD'});
+        try {
+            return await git.resolveRef({fs: this.fs, dir: this.path, ref: 'HEAD'});
+        } catch (e) {
+            throw new Error(`Invalid path to git repository: ${this.path}`);
+        }
     }
 
     async getNamespaces() : Promise<Namespace[]> {
