@@ -41,7 +41,7 @@ class ClientContext {
     return this;
   }
 
-  static fromJson(jsonContext?: {
+  static fromJSON(jsonContext?: {
     [key: string]: string | number | boolean;
   }): ClientContext {
     const ctx = new ClientContext();
