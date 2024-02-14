@@ -2,7 +2,6 @@ import { SDKService } from "@buf/lekkodev_sdk.bufbuild_connect-es/lekko/server/v
 import { ConfigurationService } from '@buf/lekkodev_sdk.bufbuild_connect-es/lekko/client/v1beta1/configuration_service_connect';
 import { Code, ConnectError, ConnectRouter } from "@bufbuild/connect";
 import { connectNodeAdapter } from "@bufbuild/connect-node";
-// import { Http2Server, createServer } from 'http2';
 import { NotFoundError } from "./store";
 import * as http from "http";
 import { GetBoolValueResponse, GetFloatValueResponse, GetIntValueResponse, GetJSONValueResponse, GetProtoValueResponse, GetStringValueResponse, Value } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
