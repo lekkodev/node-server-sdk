@@ -14,9 +14,9 @@ import {
 import { PromiseClient, Transport, createPromiseClient } from "@bufbuild/connect";
 import { Any } from '@bufbuild/protobuf';
 import { ClientContext } from './context/context';
-import { Client } from './types/client';
+import { AsyncClient } from './types/client';
 
-export class TransportClient implements Client {
+export class TransportClient implements AsyncClient {
   baseContext: ClientContext;
   client: PromiseClient<typeof ConfigurationService>;
   repository: RepositoryKey;
