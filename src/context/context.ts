@@ -1,5 +1,4 @@
-import { Value } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
-import { JsonObject } from "@bufbuild/protobuf";
+import { Value } from "@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb";
 
 type ContextKey = string;
 
@@ -42,12 +41,14 @@ class ClientContext {
     return this;
   }
 
-  static fromJson(jsonObject?: JsonObject): ClientContext {
+  static fromJson(jsonContext?: {
+    [key: string]: string | number | boolean;
+  }): ClientContext {
     const ctx = new ClientContext();
-    if (jsonObject === undefined) {
+    if (jsonContext === undefined) {
       return ctx;
     }
-    Object.entries(jsonObject).forEach(([k, v]) => {
+    Object.entries(jsonContext).forEach(([k, v]) => {
       switch (typeof v) {
         case "number":
           // TODO: `1.0` is still integer in js :(
