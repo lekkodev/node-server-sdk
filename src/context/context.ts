@@ -1,4 +1,5 @@
 import { Value } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
+import { JsonObject } from "@bufbuild/protobuf";
 
 type ContextKey = string;
 
@@ -41,12 +42,38 @@ class ClientContext {
     return this;
   }
 
+  static fromJson(jsonObject?: JsonObject): ClientContext {
+    const ctx = new ClientContext();
+    if (jsonObject === undefined) {
+      return ctx;
+    }
+    Object.entries(jsonObject).forEach(([k, v]) => {
+      switch (typeof v) {
+        case "number":
+          // TODO: `1.0` is still integer in js :(
+          if (Number.isInteger(v)) {
+            ctx.setInt(k, v);
+          } else {
+            ctx.setDouble(k, v);
+          }
+          break;
+        case "string":
+          ctx.setString(k, v);
+          break;
+        case "boolean":
+          ctx.setBoolean(k, v);
+          break;
+      }
+    });
+    return ctx;
+  }
+
   toString(): string {
     const pairs: string[] = [];
     for (const k in this.data) {
       pairs.push(`${k}: ${this.data[k].kind.value}`);
     }
-    return pairs.join(', ');
+    return pairs.join(", ");
   }
 }
 
