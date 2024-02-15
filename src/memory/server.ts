@@ -53,7 +53,6 @@ export class SDKServer {
         getBoolValue: async (req, context) => {
           await this.handleHeaders(context.requestHeader);
           try {
-            await this.handleHeaders(context.requestHeader);
             const value = this.client.getBool(
               req.namespace,
               req.key,
