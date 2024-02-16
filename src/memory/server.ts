@@ -13,7 +13,6 @@ import {
   GetJSONValueResponse,
   GetProtoValueResponse,
   GetStringValueResponse,
-  Value,
 } from "@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb";
 import { Client, DevClient } from "../types/client";
 import { ClientContext } from "../context/context";
@@ -56,7 +55,7 @@ export class SDKServer {
             const value = this.client.getBool(
               req.namespace,
               req.key,
-              this.fromReqContext(req.context)
+              new ClientContext(req.context)
             );
             this.logEval("boolean", req.namespace, req.key);
             return new GetBoolValueResponse({ value });
@@ -73,7 +72,7 @@ export class SDKServer {
             const value = this.client.getInt(
               req.namespace,
               req.key,
-              this.fromReqContext(req.context)
+              new ClientContext(req.context)
             );
             this.logEval("int", req.namespace, req.key);
             return new GetIntValueResponse({ value });
@@ -90,7 +89,7 @@ export class SDKServer {
             const value = this.client.getFloat(
               req.namespace,
               req.key,
-              this.fromReqContext(req.context)
+              new ClientContext(req.context)
             );
             this.logEval("float", req.namespace, req.key);
             return new GetFloatValueResponse({ value });
@@ -107,7 +106,7 @@ export class SDKServer {
             const value = this.client.getString(
               req.namespace,
               req.key,
-              this.fromReqContext(req.context)
+              new ClientContext(req.context)
             );
             this.logEval("string", req.namespace, req.key);
             return new GetStringValueResponse({ value });
@@ -124,7 +123,7 @@ export class SDKServer {
             const value = this.client.getJSON(
               req.namespace,
               req.key,
-              this.fromReqContext(req.context)
+              new ClientContext(req.context)
             );
             this.logEval("JSON", req.namespace, req.key);
             return new GetJSONValueResponse({
@@ -143,7 +142,7 @@ export class SDKServer {
             const value = this.client.getProto(
               req.namespace,
               req.key,
-              this.fromReqContext(req.context)
+              new ClientContext(req.context)
             );
             this.logEval("proto", req.namespace, req.key);
             return new GetProtoValueResponse({ value });
@@ -161,31 +160,6 @@ export class SDKServer {
         corsHandler(req, res, () => connectNodeAdapter({ routes })(req, res))
       )
       .listen(port);
-  }
-
-  fromReqContext(context: { [key: string]: Value }): ClientContext {
-    const clientContext = new ClientContext();
-    Object.entries(context).forEach(([key, value]) => {
-      switch (value.kind.case) {
-        case "boolValue": {
-          clientContext.setBoolean(key, value.kind.value);
-          break;
-        }
-        case "intValue": {
-          // TODO: SDKs should correctly handle near-64-bit cases
-          clientContext.setInt(key, Number(value.kind.value));
-          break;
-        }
-        case "doubleValue": {
-          clientContext.setDouble(key, value.kind.value);
-          break;
-        }
-        case "stringValue": {
-          clientContext.setString(key, value.kind.value);
-        }
-      }
-    });
-    return clientContext;
   }
 
   logEval(type: string, namespace: string, key: string): void {

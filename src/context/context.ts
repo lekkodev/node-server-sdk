@@ -1,12 +1,15 @@
-import { Value } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
+import { Value } from "@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb";
 
 type ContextKey = string;
 
 class ClientContext {
   data: { [key: ContextKey]: Value };
 
-  constructor() {
+  constructor(data?: { [key: ContextKey]: Value }) {
     this.data = {};
+    if (data !== undefined) {
+      this.data = data;
+    }
   }
 
   get(key: string): Value | undefined {
@@ -46,7 +49,7 @@ class ClientContext {
     for (const k in this.data) {
       pairs.push(`${k}: ${this.data[k].kind.value}`);
     }
-    return pairs.join(', ');
+    return pairs.join(", ");
   }
 }
 
