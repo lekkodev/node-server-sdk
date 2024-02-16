@@ -1,4 +1,4 @@
-import { type Transport } from "@bufbuild/connect";
+import { Interceptor, type Transport } from "@bufbuild/connect";
 import { createGrpcWebTransport, createConnectTransport, createGrpcTransport } from "@bufbuild/connect-node";
 
 export enum TransportProtocol {
@@ -7,7 +7,7 @@ export enum TransportProtocol {
   gRPCWeb
 }
 
-const APIKEY_INTERCEPTOR = (apiKey?: string) => (next: any) => async (req: any) => {
+const APIKEY_INTERCEPTOR: (apiKey?: string) => Interceptor = (apiKey?: string) => (next) => async (req) => {
   if (apiKey) {
     req.header.set('apikey', apiKey);
   }
@@ -25,7 +25,7 @@ export class ClientTransportBuilder {
     this.apiKey = apiKey;
   }
 
-  async build(): Promise<Transport> {
+  build(): Transport {
     if (this.protocol == TransportProtocol.HTTP) {
       if (this.apiKey === undefined) {
         throw new Error("API Key required");

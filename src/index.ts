@@ -17,8 +17,8 @@ type APIOptions = {
   transportProtocol?: TransportProtocol
 }
 
-async function initAPIClient(options: APIOptions): Promise<AsyncClient> {
-  const transport = await new ClientTransportBuilder(
+function initAPIClient(options: APIOptions): AsyncClient {
+  const transport = new ClientTransportBuilder(
     {
       hostname: options.hostname ?? "https://prod.api.lekko.dev",
       protocol: options.transportProtocol ?? TransportProtocol.HTTP,
@@ -34,8 +34,8 @@ type SidecarOptions = {
   transportProtocol?: TransportProtocol
 }
 
-async function initSidecarClient(options: SidecarOptions): Promise<AsyncClient> {
-  const transport = await new ClientTransportBuilder(
+function initSidecarClient(options: SidecarOptions): AsyncClient {
+  const transport = new ClientTransportBuilder(
     {
       hostname: options.hostname ?? "http://localhost:50051",
       protocol: options.transportProtocol ?? TransportProtocol.gRPC,
@@ -56,7 +56,7 @@ type BackendOptions = {
 const defaultUpdateIntervalMs = 15 * 1000; // 15s
 
 async function initCachedAPIClient(options: BackendOptions): Promise<Client> {
-  const transport = await new ClientTransportBuilder({
+  const transport = new ClientTransportBuilder({
     hostname: options.hostname ?? "https://prod.api.lekko.dev",
     protocol: options.transportProtocol ?? TransportProtocol.HTTP,
     apiKey: options.apiKey
@@ -90,7 +90,7 @@ type GitOptions = {
 async function initCachedGitClient(options: GitOptions): Promise<Client> {
   let transport: Transport | undefined;
   if (options.apiKey) {
-    transport = await new ClientTransportBuilder({
+    transport = new ClientTransportBuilder({
       hostname: options.hostname ?? "https://prod.api.lekko.dev",
       protocol: options.transportProtocol ?? TransportProtocol.HTTP,
       apiKey: options.apiKey
@@ -121,7 +121,7 @@ type LocalOptions = {
  */
 async function initClient(options?: LocalOptions | BackendOptions): Promise<Client> {
   if (options !== undefined && "apiKey" in options) {
-    const transport = await new ClientTransportBuilder({
+    const transport = new ClientTransportBuilder({
       hostname: options.hostname ?? "https://prod.api.lekko.dev",
       protocol: options.transportProtocol ?? TransportProtocol.HTTP,
       apiKey: options.apiKey
@@ -138,9 +138,9 @@ async function initClient(options?: LocalOptions | BackendOptions): Promise<Clie
     return client;
   } else {
     let path = "";
-    if (options !== undefined && "path" in options) {
+    if (options !== undefined && "path" in options && options.path !== undefined) {
       path = options.path;
-    } else if (options === undefined || !("path" in options)) {
+    } else {
       // Invoke Lekko CLI to ensure default path location presence
       const defaultInit = spawnSync("lekko", ["repo", "init-default"], { encoding: "utf-8" });
       if (defaultInit.error !== undefined || defaultInit.status !== 0) {

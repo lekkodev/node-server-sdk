@@ -13,6 +13,12 @@ type configData = {
 
 type configMap = Map<string, Map<string, configData>>
 
+export class NotFoundError extends Error {
+    constructor(resType: "namespace" | "config", name: string) {
+        super(`${resType} ${name} not found`);
+    }
+}
+
 export type StoredEvalResult = {
     config: Feature,
     configSHA: string,
@@ -38,11 +44,11 @@ export class Store {
     get(namespace: string, configKey: string) {
         const nsMap = this.configs.get(namespace);
         if (!nsMap) {
-            throw new Error('namespace not found');
+            throw new NotFoundError("namespace", namespace);
         }
         const result = nsMap.get(configKey);
         if (!result) {
-            throw new Error('config not found');
+            throw new NotFoundError("config", configKey);
         }
         return result;
     }

@@ -8,7 +8,7 @@
       // ES2018.AsyncIterable for AsyncIterator
       "ES2018.AsyncIterable"
     ],
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitAny": true,

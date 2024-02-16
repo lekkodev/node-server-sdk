@@ -5,8 +5,11 @@ type ContextKey = string;
 class ClientContext {
   data: { [key: ContextKey]: Value };
 
-  constructor() {
+  constructor(data?: { [key: ContextKey]: Value }) {
     this.data = {};
+    if (data !== undefined) {
+      this.data = data;
+    }
   }
 
   get(key: string): Value | undefined {
