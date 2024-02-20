@@ -1,7 +1,7 @@
-import { DistributionService } from "@buf/lekkodev_cli.bufbuild_connect-es/lekko/backend/v1beta1/distribution_service_connect";
+import { DistributionService } from "@buf/lekkodev_cli.connectrpc_es/lekko/backend/v1beta1/distribution_service_connect";
 import { ContextKey, FlagEvaluationEvent, SendFlagEvaluationMetricsRequest } from "@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb";
 import { Value } from "@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb";
-import { PromiseClient } from "@bufbuild/connect";
+import { PromiseClient } from "@connectrpc/connect";
 import { BackoffOptions, backOff } from 'exponential-backoff';
 import { SetIntervalAsyncTimer, clearIntervalAsync, setIntervalAsync } from 'set-interval-async';
 import { ClientContext } from "../context/context";

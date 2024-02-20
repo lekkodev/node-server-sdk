@@ -1,9 +1,9 @@
 import {
     DistributionService,
-} from '@buf/lekkodev_cli.bufbuild_connect-es/lekko/backend/v1beta1/distribution_service_connect';
+} from '@buf/lekkodev_cli.connectrpc_es/lekko/backend/v1beta1/distribution_service_connect';
 import { FlagEvaluationEvent } from '@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb';
 import { RepositoryKey } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
-import { PromiseClient, Transport, createPromiseClient } from '@bufbuild/connect';
+import { PromiseClient, Transport, createPromiseClient } from '@connectrpc/connect';
 import { Any, BoolValue, DoubleValue, Int64Value, StringValue, Timestamp, Value } from '@bufbuild/protobuf';
 import { backOff } from 'exponential-backoff';
 import { ClientContext } from '../context/context';
@@ -127,7 +127,17 @@ export class Backend implements Client, DevClient {
         await this.eventsBatcher.init(this.sessionKey);
     }
     
+    /**
+     * Not implemented
+     */
     async reinitialize(): Promise<void> {
+        return;
+    }
+
+    /**
+     * Not implemented
+     *  */
+    async createConfig(): Promise<void> {
         return;
     }
 

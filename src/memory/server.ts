@@ -1,8 +1,8 @@
-import { SDKService } from "@buf/lekkodev_sdk.bufbuild_connect-es/lekko/server/v1beta1/sdk_connect";
-import { ConfigurationService } from "@buf/lekkodev_sdk.bufbuild_connect-es/lekko/client/v1beta1/configuration_service_connect";
-import { Code, ConnectError, ConnectRouter } from "@bufbuild/connect";
-import { connectNodeAdapter } from "@bufbuild/connect-node";
-import { cors as connectCors } from "@bufbuild/connect";
+import { SDKService } from "@buf/lekkodev_sdk.connectrpc_es/lekko/server/v1beta1/sdk_connect";
+import { ConfigurationService } from "@buf/lekkodev_sdk.connectrpc_es/lekko/client/v1beta1/configuration_service_connect";
+import { Code, ConnectError, ConnectRouter } from "@connectrpc/connect";
+import { connectNodeAdapter } from "@connectrpc/connect-node";
+import { cors as connectCors } from "@connectrpc/connect";
 import cors from "cors";
 import { NotFoundError } from "./store";
 import http from "http";
@@ -18,6 +18,7 @@ import { Client, DevClient } from "../types/client";
 import { ClientContext } from "../context/context";
 
 const LOCAL_PATH_HEADER = "localpath";
+const API_KEY_HEADER = "apikey";
 
 // Runs a simple vanilla nodejs web server for debugging.
 // The server exposes the interface defined here:
@@ -25,9 +26,11 @@ const LOCAL_PATH_HEADER = "localpath";
 export class SDKServer {
   client: Client & DevClient;
   server?: http.Server;
+  createMissing: boolean;
 
-  constructor(client: Client & DevClient, port?: number) {
+  constructor(client: Client & DevClient, port?: number, createMissing = true) {
     this.client = client;
+    this.createMissing = createMissing;
     if (!port) {
       return;
     }
@@ -36,7 +39,7 @@ export class SDKServer {
       methods: [...connectCors.allowedMethods],
       allowedHeaders: [
         LOCAL_PATH_HEADER,
-        "apikey",
+        API_KEY_HEADER,
         ...connectCors.allowedHeaders,
       ],
       exposedHeaders: [...connectCors.exposedHeaders],
@@ -51,89 +54,144 @@ export class SDKServer {
       router.service(ConfigurationService, {
         getBoolValue: async (req, context) => {
           await this.handleHeaders(context.requestHeader);
-          try {
-            const value = this.client.getBool(
-              req.namespace,
-              req.key,
-              new ClientContext(req.context)
-            );
-            this.logEval("boolean", req.namespace, req.key);
-            return new GetBoolValueResponse({ value });
-          } catch (e) {
-            if (e instanceof NotFoundError) {
-              throw new ConnectError(e.message, Code.NotFound);
+          for (;;) {
+            try {
+              const value = this.client.getBool(
+                req.namespace,
+                req.key,
+                new ClientContext(req.context)
+              );
+              this.logEval("boolean", req.namespace, req.key);
+              return new GetBoolValueResponse({ value });
+            } catch (e) {
+              if (e instanceof NotFoundError) {
+                if (this.createMissing) {
+                  await this.client.createConfig(
+                    "bool",
+                    req.namespace,
+                    req.key
+                  );
+                  this.logCreate("boolean", req.namespace, req.key);
+                  continue;
+                }
+                throw new ConnectError(e.message, Code.NotFound);
+              }
+              throw e;
             }
-            throw e;
           }
         },
         getIntValue: async (req, context) => {
           await this.handleHeaders(context.requestHeader);
-          try {
-            const value = this.client.getInt(
-              req.namespace,
-              req.key,
-              new ClientContext(req.context)
-            );
-            this.logEval("int", req.namespace, req.key);
-            return new GetIntValueResponse({ value });
-          } catch (e) {
-            if (e instanceof NotFoundError) {
-              throw new ConnectError(e.message, Code.NotFound);
+          for (;;) {
+            try {
+              const value = this.client.getInt(
+                req.namespace,
+                req.key,
+                new ClientContext(req.context)
+              );
+              this.logEval("int", req.namespace, req.key);
+              return new GetIntValueResponse({ value });
+            } catch (e) {
+              if (e instanceof NotFoundError) {
+                if (this.createMissing) {
+                  await this.client.createConfig(
+                    "bool",
+                    req.namespace,
+                    req.key
+                  );
+                  this.logCreate("int", req.namespace, req.key);
+                  continue;
+                }
+                throw new ConnectError(e.message, Code.NotFound);
+              }
+              throw e;
             }
-            throw e;
           }
         },
         getFloatValue: async (req, context) => {
           await this.handleHeaders(context.requestHeader);
-          try {
-            const value = this.client.getFloat(
-              req.namespace,
-              req.key,
-              new ClientContext(req.context)
-            );
-            this.logEval("float", req.namespace, req.key);
-            return new GetFloatValueResponse({ value });
-          } catch (e) {
-            if (e instanceof NotFoundError) {
-              throw new ConnectError(e.message, Code.NotFound);
+          for (;;) {
+            try {
+              const value = this.client.getFloat(
+                req.namespace,
+                req.key,
+                new ClientContext(req.context)
+              );
+              this.logEval("float", req.namespace, req.key);
+              return new GetFloatValueResponse({ value });
+            } catch (e) {
+              if (e instanceof NotFoundError) {
+                if (this.createMissing) {
+                  await this.client.createConfig(
+                    "bool",
+                    req.namespace,
+                    req.key
+                  );
+                  this.logCreate("float", req.namespace, req.key);
+                  continue;
+                }
+                throw new ConnectError(e.message, Code.NotFound);
+              }
+              throw e;
             }
-            throw e;
           }
         },
         getStringValue: async (req, context) => {
           await this.handleHeaders(context.requestHeader);
-          try {
-            const value = this.client.getString(
-              req.namespace,
-              req.key,
-              new ClientContext(req.context)
-            );
-            this.logEval("string", req.namespace, req.key);
-            return new GetStringValueResponse({ value });
-          } catch (e) {
-            if (e instanceof NotFoundError) {
-              throw new ConnectError(e.message, Code.NotFound);
+          for (;;) {
+            try {
+              const value = this.client.getString(
+                req.namespace,
+                req.key,
+                new ClientContext(req.context)
+              );
+              this.logEval("string", req.namespace, req.key);
+              return new GetStringValueResponse({ value });
+            } catch (e) {
+              if (e instanceof NotFoundError) {
+                if (this.createMissing) {
+                  await this.client.createConfig(
+                    "bool",
+                    req.namespace,
+                    req.key
+                  );
+                  this.logCreate("string", req.namespace, req.key);
+                  continue;
+                }
+                throw new ConnectError(e.message, Code.NotFound);
+              }
+              throw e;
             }
-            throw e;
           }
         },
         getJSONValue: async (req, context) => {
           await this.handleHeaders(context.requestHeader);
-          try {
-            const value = this.client.getJSON(
-              req.namespace,
-              req.key,
-              new ClientContext(req.context)
-            );
-            this.logEval("JSON", req.namespace, req.key);
-            return new GetJSONValueResponse({
-              value: new TextEncoder().encode(JSON.stringify(value)),
-            });
-          } catch (e) {
-            if (e instanceof NotFoundError) {
-              throw new ConnectError(e.message, Code.NotFound);
+          for (;;) {
+            try {
+              const value = this.client.getJSON(
+                req.namespace,
+                req.key,
+                new ClientContext(req.context)
+              );
+              this.logEval("JSON", req.namespace, req.key);
+              return new GetJSONValueResponse({
+                value: new TextEncoder().encode(JSON.stringify(value)),
+              });
+            } catch (e) {
+              if (e instanceof NotFoundError) {
+                if (this.createMissing) {
+                  await this.client.createConfig(
+                    "json",
+                    req.namespace,
+                    req.key
+                  );
+                  this.logCreate("JSON", req.namespace, req.key);
+                  continue;
+                }
+                throw new ConnectError(e.message, Code.NotFound);
+              }
+              throw e;
             }
-            throw e;
           }
         },
         getProtoValue: async (req, context) => {
@@ -147,6 +205,7 @@ export class SDKServer {
             this.logEval("proto", req.namespace, req.key);
             return new GetProtoValueResponse({ value });
           } catch (e) {
+            // TODO: Also support auto-creation for proto configs
             if (e instanceof NotFoundError) {
               throw new ConnectError(e.message, Code.NotFound);
             }
@@ -165,6 +224,11 @@ export class SDKServer {
   logEval(type: string, namespace: string, key: string): void {
     // eslint-disable-next-line no-console
     console.log(`Served ${type} config ${namespace}/${key}`);
+  }
+
+  logCreate(type: string, namespace: string, key: string): void {
+    // eslint-disable-next-line no-console
+    console.log(`Created ${type} config ${namespace}/${key}`);
   }
 
   async handleHeaders(headers: Headers): Promise<void> {

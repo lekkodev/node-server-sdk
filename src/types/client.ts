@@ -26,5 +26,6 @@ export interface Client {
 
 export interface DevClient {
     listContents(): ListContentsResponse;
-    reinitialize(options: { path?: string }): Promise<void>;
+    reinitialize(options: { path?: string, force?: boolean }): Promise<void>;
+    createConfig(type: "bool" | "string" | "int" | "float" | "json", namespace: string, key: string): Promise<void>;
 }

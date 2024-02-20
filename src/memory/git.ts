@@ -1,10 +1,10 @@
 import {
     DistributionService,
-} from '@buf/lekkodev_cli.bufbuild_connect-es/lekko/backend/v1beta1/distribution_service_connect';
+} from '@buf/lekkodev_cli.connectrpc_es/lekko/backend/v1beta1/distribution_service_connect';
 import { Feature as DistFeature, FlagEvaluationEvent, GetRepositoryContentsResponse, Namespace, RegisterClientResponse } from '@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb';
 import { Feature } from '@buf/lekkodev_cli.bufbuild_es/lekko/feature/v1beta1/feature_pb';
 import { RepositoryKey } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
-import { PromiseClient, Transport, createPromiseClient } from '@bufbuild/connect';
+import { PromiseClient, Transport, createPromiseClient } from '@connectrpc/connect';
 import { Any, BoolValue, DoubleValue, Int64Value, StringValue, Timestamp, Value } from '@bufbuild/protobuf';
 import { backOff } from 'exponential-backoff';
 import * as fs from 'fs';
@@ -20,6 +20,7 @@ import { Store, StoredEvalResult } from './store';
 import * as path from 'path';
 import * as os from 'os';
 import { ListContentsResponse } from '@buf/lekkodev_sdk.bufbuild_es/lekko/server/v1beta1/sdk_pb';
+import { spawn } from 'child_process';
 
 const eventsBatchSize = 100;
 const defaultRootConfigMetadataFilename = 'lekko.root.yaml';
@@ -48,6 +49,7 @@ export class Git implements Client, DevClient {
         transport?: Transport,
         useFS?: IFS,
         port?: number,
+        createMissing = true,
     ) {
         if (transport) {
             this.distClient = createPromiseClient(DistributionService, transport);
@@ -63,7 +65,7 @@ export class Git implements Client, DevClient {
         this.useFS = useFS;
         this.loader = new configLoader(this.path, useFS);
         this.shouldWatch = shouldWatch;
-        this.server = new SDKServer(this, port);
+        this.server = new SDKServer(this, port, createMissing);
     }
 
     async initialize() {
@@ -90,10 +92,10 @@ export class Git implements Client, DevClient {
         }
     }
 
-    async reinitialize({ path }: { path?: string }): Promise<void> {
+    async reinitialize({ path, force }: { path?: string, force?: boolean }): Promise<void> {
         if (path) {
             path = this.resolveHomedir(path);
-            if (path !== this.path) {
+            if (path !== this.path || force) {
                 this.path = path;
                 this.loader = new configLoader(this.path, this.useFS);
                 await this.load();
@@ -141,6 +143,35 @@ export class Git implements Client, DevClient {
 
     listContents(): ListContentsResponse {
         return this.store.listContents();
+    }
+
+    async createConfig(type: 'string' | 'bool' | 'int' | 'float' | 'json', namespace: string, key: string): Promise<void> {
+        // Invoke Lekko CLI to add namespace (okay if it fails due to already existing)
+        await new Promise<void>((resolve, reject) => {
+            const cmd = spawn("lekko", ["ns", "add", "-n", namespace], { cwd: this.path });
+            cmd.on("error", (e) => {
+                reject(e);
+            });
+            cmd.on("exit", () => {
+                resolve();
+            });
+        });
+        // Invoke Lekko CLI to create new config
+        await new Promise<void>((resolve, reject) => {
+            const cmd = spawn("lekko", ["config", "add", "-t", type, "-n", namespace, "-c", key], { cwd: this.path });
+            cmd.on("error", (e) => {
+                reject(e);
+            });
+            cmd.on("exit", (code) => {
+                if (code !== 0) {
+                    reject(new Error("Failed to create config"));
+                }
+                resolve();
+            });
+        });
+        // Reinitialize to make sure new contents are loaded
+        // TODO: Make this cheaper
+        await this.reinitialize({ path: this.path, force: true });
     }
 
     track(namespace: string, key: string, result: StoredEvalResult, ctx?: ClientContext) {

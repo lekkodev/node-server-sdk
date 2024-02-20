@@ -1,5 +1,5 @@
 import { Value } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
-import { Transport } from '@bufbuild/connect';
+import { Transport } from '@connectrpc/connect';
 import { TransportClient } from './client';
 import { ClientContext } from './context/context';
 import { Backend } from './memory/backend';
@@ -111,8 +111,23 @@ async function initCachedGitClient(options: GitOptions): Promise<Client> {
 }
 
 type LocalOptions = {
-  path: string
+  /**
+   * Path to Lekko config repositories stored locally. If path is omitted
+   * and createMissing is enabled, a blank repository will be created in a
+   * OS-dependent default location.
+   */
+  path?: string
+  /**
+   * Port for local dev server. Other SDKs can connect to the dev server
+   * based on this port.
+   */
   serverPort?: number
+  /**
+   * Additional option for local dev server. Whether to automatically create
+   * missing resources if they are requested (repo, configs). Requires the
+   * Lekko CLI to be available based on the system's PATH. Defaults to true.
+   */
+  createMissing?: boolean
 }
 
 /**
@@ -138,16 +153,19 @@ async function initClient(options?: LocalOptions | BackendOptions): Promise<Clie
     return client;
   } else {
     let path = "";
+    const createMissing = options === undefined || !("createMissing" in options) || options.createMissing !== false;
     if (options !== undefined && "path" in options && options.path !== undefined) {
       path = options.path;
-    } else {
+    } else if (createMissing) {
       // Invoke Lekko CLI to ensure default path location presence
       const defaultInit = spawnSync("lekko", ["repo", "init-default"], { encoding: "utf-8" });
       if (defaultInit.error !== undefined || defaultInit.status !== 0) {
         throw new Error("Failed to initialize default Lekko repo. Try upgrading the Lekko CLI.");
       }
       path = "~/Library/Application Support/Lekko/Config Repositories/default";
-    } 
+    } else {
+      throw new Error("Either `path` or `createMissing` must be specified for local mode");
+    }
     const client = new Git(
       "", 
       "", 
@@ -157,6 +175,7 @@ async function initClient(options?: LocalOptions | BackendOptions): Promise<Clie
       undefined, 
       undefined, 
       options?.serverPort,
+      createMissing,
     );
     await client.initialize();
     return client;
