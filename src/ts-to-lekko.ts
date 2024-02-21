@@ -5,6 +5,15 @@ import * as ts from "typescript";
 import { TypeChecker } from "typescript";
 
 
+/*
+    TODOs
+    * Hook the proto stuff into buf's stuff
+    * Make proto rulelang stuff work for real (import and correctly format the message)
+    * Correctly parse the binaryExpressions to validate property and convert to the correct operators
+    * rewrite the code to be /less/ vomit inducing
+
+*/
+
 interface Config {
     name: string
     type: string
