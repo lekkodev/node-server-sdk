@@ -6,6 +6,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "bin": {
+    "ts-to-lekko": "bin/ts-to-lekko.ts",
     "lekko-server": "bin/server.js"
   },
   "scripts": {
