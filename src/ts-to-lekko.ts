@@ -12,6 +12,11 @@ import { TypeChecker } from "typescript";
     * Correctly parse the binaryExpressions to validate property and convert to the correct operators
     * rewrite the code to be /less/ vomit inducing
     * wrapper meta-programming code to use it as a static fallback
+    
+    Stretch:
+    * Static Contexts
+    * Code gen from the repo (should be easy just not needed now)
+    * config description as jsdoc
 
 */
 
