@@ -11,6 +11,7 @@ import { TypeChecker } from "typescript";
     * Make proto rulelang stuff work for real (import and correctly format the message)
     * Correctly parse the binaryExpressions to validate property and convert to the correct operators
     * rewrite the code to be /less/ vomit inducing
+    * wrapper meta-programming code to use it as a static fallback
 
 */
 
