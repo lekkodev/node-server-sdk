@@ -28,7 +28,7 @@ export interface Dog {
 		vetVisits: Date[];
 
 	};
-};
+}
 
 
 export function getPuppyFlag({isCool, breed}: {isCool: string, breed: string}):  boolean {
@@ -72,6 +72,6 @@ export function getGuardDog(): Dog {
 			vaccinations: [],
 			vetVisits: [new Date("2023-12-09")]
 		}
-	}
+	};
 }
 

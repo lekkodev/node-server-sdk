@@ -16,10 +16,13 @@ import { TypeChecker } from "typescript";
     * command line args
     
     Stretch:
-    * Static Contexts
+    * Static Contexts (might make things easier tbh)
+    * constants at the top of the file
+    * enums, maybe detect sex: 'male' | 'female'
     * Code gen from the repo (should be easy just not needed now)
     * config description as jsdoc
     * some sort of watcher thing (maybe hook into yarn?)
+    * Bucketing
 
 */
 
@@ -32,6 +35,36 @@ interface Config {
 
 function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
 
+
+    function expressionToThing(expression: Expression) {
+        switch (expression.kind) {
+            case ts.SyntaxKind.BinaryExpression:
+                var operator: string;
+                switch(expression.operatorToken.kind) {
+                    case ts.SyntaxKind.EqualsEqualsEqualsToken:
+                        operator = "==";
+                        break;
+                    case ts.SyntaxKind.AmpersandAmpersandToken:
+                        operator = "and"
+                        break;
+                    default:
+                        throw new Error(`need to be able to handle: ${ts.SyntaxKind[expression.operatorToken.kind]}`);
+                }
+                // TODO - we should probably enforce that it must be identifier op literal
+                return `(${expressionToThing(expression.left)} ${operator} ${expressionToThing(expression.right)})`
+            case ts.SyntaxKind.Identifier:
+                return expression.getText()
+            case ts.SyntaxKind.StringLiteral:
+                return expression.getText()
+            case ts.SyntaxKind.ParenthesizedExpression:
+                return `( ${expressionToThing(expression.expression)} )`;
+            // TODO other literal types
+            default:
+                throw new Error(`need to be able to handle: ${ts.SyntaxKind[expression.kind]}`);
+        }
+        
+    }
+
     function ifStatementToRule(ifStatement: ts.IfStatement, checker: TypeChecker) {
         const block = ifStatement.thenStatement as ts.Block;
         if (block.statements.length != 1) {
@@ -41,7 +74,7 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
             throw new Error(`Else does not yet exist, sorry: ${ifStatement.getFullText()}`);
         }
         return {
-            "rule": ifStatement.expression.getFullText(), // TODO walk this
+            "rule": expressionToThing(ifStatement.expression),
             "value": returnStatementToValue(block.statements[0] as ts.ReturnStatement, checker),
         };
     }
