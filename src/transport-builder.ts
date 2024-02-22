@@ -1,5 +1,5 @@
-import { Interceptor, type Transport } from "@bufbuild/connect";
-import { createGrpcWebTransport, createConnectTransport, createGrpcTransport } from "@bufbuild/connect-node";
+import { Interceptor, type Transport } from "@connectrpc/connect";
+import { createGrpcWebTransport, createConnectTransport, createGrpcTransport } from "@connectrpc/connect-node";
 
 export enum TransportProtocol {
   HTTP,
