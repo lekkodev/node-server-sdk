@@ -16,7 +16,7 @@ enum Environment {
 };
 */
 
-interface Dog {
+export interface Dog {
 	name: string;
 	gender: string;
 	owner?: string;
@@ -31,7 +31,7 @@ interface Dog {
 };
 
 
-function getPuppyFlag({isCool, breed}: {isCool: string, breed: string}):  boolean {
+export function getPuppyFlag({isCool, breed}: {isCool: string, breed: string}):  boolean {
 	if (isCool === "foo") {
 		return true;
 	}
@@ -44,7 +44,7 @@ function getPuppyFlag({isCool, breed}: {isCool: string, breed: string}):  boolea
 	return false;
 }
 
-function getPuppyFartRisk({isCool, breed}: {isCool: string, breed: string}):  string {
+export function getPuppyFartRisk({isCool, breed}: {isCool: string, breed: string}):  string {
 	if (isCool === "foo") {
 		return "Deadly";
 	}
@@ -57,14 +57,14 @@ function getPuppyFartRisk({isCool, breed}: {isCool: string, breed: string}):  st
 	return "Use Caution";
 }
 
-function getPuppyNumber({isCool, breed}: {isCool: string, breed: string}):  number {
+export function getPuppyNumber({isCool, breed}: {isCool: string, breed: string}):  number {
 	if (isCool === "foo") {
 		return 6;
 	}
 	return 9;
 }
 
-function getGuardDog(): Dog {
+export function getGuardDog(): Dog {
 	return {
 		name: "Rex",
 		gender: "male",

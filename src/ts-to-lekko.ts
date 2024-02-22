@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 /* eslint-disable */
+// @ts-nocheck
 import assert = require("assert");
 import * as ts from "typescript";
 import { TypeChecker } from "typescript";
