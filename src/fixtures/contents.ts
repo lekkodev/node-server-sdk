@@ -1,5 +1,5 @@
-import { Feature as DistFeature, GetRepositoryContentsResponse, Namespace } from "@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb";
-import { Feature } from "@buf/lekkodev_cli.bufbuild_es/lekko/feature/v1beta1/feature_pb";
+import { Feature as DistFeature, GetRepositoryContentsResponse, Namespace } from "../gen/lekko/backend/v1beta1/distribution_service_pb";
+import { Feature } from "../gen/lekko/feature/v1beta1/feature_pb";
 import { Any, Int32Value, Value } from "@bufbuild/protobuf";
 import { simpleConfig } from "./eval";
 

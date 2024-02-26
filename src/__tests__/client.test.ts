@@ -12,7 +12,7 @@ import {
   GetStringValueRequest,
   GetStringValueResponse,
   Any as LekkoAny,
-} from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
+} from '../gen/lekko/client/v1beta1/configuration_service_pb';
 import { Any, BoolValue } from '@bufbuild/protobuf';
 import { ClientContext } from '../context/context';
 import { TransportClient, initAPIClient, initSidecarClient } from '../index';

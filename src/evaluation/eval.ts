@@ -1,4 +1,4 @@
-import { Constraint, Feature, Any as LekkoAny } from '@buf/lekkodev_cli.bufbuild_es/lekko/feature/v1beta1/feature_pb';
+import { Constraint, Feature, Any as LekkoAny } from '../gen/lekko/feature/v1beta1/feature_pb';
 import { Any } from '@bufbuild/protobuf';
 import { ClientContext } from '../context/context';
 import evaluateRule from './rule';

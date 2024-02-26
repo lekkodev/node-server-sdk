@@ -1,6 +1,6 @@
 import {
   ConfigurationService,
-} from '@buf/lekkodev_sdk.connectrpc_es/lekko/client/v1beta1/configuration_service_connect';
+} from './gen/lekko/client/v1beta1/configuration_service_connect';
 import {
   GetBoolValueRequest,
   GetFloatValueRequest,
@@ -10,7 +10,7 @@ import {
   GetStringValueRequest,
   //  RegisterRequest,
   RepositoryKey
-} from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
+} from './gen/lekko/client/v1beta1/configuration_service_pb';
 import { PromiseClient, Transport, createPromiseClient } from '@connectrpc/connect';
 import { Any } from '@bufbuild/protobuf';
 import { ClientContext } from './context/context';

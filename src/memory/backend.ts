@@ -1,8 +1,8 @@
 import {
     DistributionService,
-} from '@buf/lekkodev_cli.connectrpc_es/lekko/backend/v1beta1/distribution_service_connect';
-import { FlagEvaluationEvent } from '@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb';
-import { RepositoryKey } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
+} from '../gen/lekko/backend/v1beta1/distribution_service_connect';
+import { FlagEvaluationEvent } from '../gen/lekko/backend/v1beta1/distribution_service_pb';
+import { RepositoryKey } from '../gen/lekko/client/v1beta1/configuration_service_pb';
 import { PromiseClient, Transport, createPromiseClient } from '@connectrpc/connect';
 import { Any, BoolValue, DoubleValue, Int64Value, StringValue, Timestamp, Value } from '@bufbuild/protobuf';
 import { backOff } from 'exponential-backoff';
@@ -11,7 +11,7 @@ import { Client, DevClient } from '../types/client';
 import { EventsBatcher, toContextKeysProto } from './events';
 import { SDKServer } from './server';
 import { Store, StoredEvalResult } from './store';
-import { ListContentsResponse } from '@buf/lekkodev_sdk.bufbuild_es/lekko/server/v1beta1/sdk_pb';
+import { ListContentsResponse } from '../gen/lekko/server/v1beta1/sdk_pb';
 
 const eventsBatchSize = 100;
 
