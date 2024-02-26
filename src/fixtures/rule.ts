@@ -1,4 +1,4 @@
-import { Atom, ComparisonOperator, Rule } from "@buf/lekkodev_cli.bufbuild_es/lekko/rules/v1beta3/rules_pb";
+import { Atom, ComparisonOperator, Rule } from "../gen/lekko/rules/v1beta3/rules_pb";
 import { ListValue, Value } from '@bufbuild/protobuf';
 
 export function atom(key: string, op: string, val: number | string | boolean | string[]) {

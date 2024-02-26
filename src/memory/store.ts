@@ -1,6 +1,6 @@
-import { GetRepositoryContentsResponse } from '@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb';
-import { Feature } from '@buf/lekkodev_cli.bufbuild_es/lekko/feature/v1beta1/feature_pb';
-import { Config, ListContentsResponse, Namespace } from "@buf/lekkodev_sdk.bufbuild_es/lekko/server/v1beta1/sdk_pb";
+import { GetRepositoryContentsResponse } from '../gen/lekko/backend/v1beta1/distribution_service_pb';
+import { Feature } from '../gen/lekko/feature/v1beta1/feature_pb';
+import { Config, ListContentsResponse, Namespace } from "../gen/lekko/server/v1beta1/sdk_pb";
 import { createHash } from 'node:crypto';
 import { ClientContext } from '../context/context';
 import { EvaluationResult, evaluate } from '../evaluation/eval';

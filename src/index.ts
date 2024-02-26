@@ -1,4 +1,4 @@
-import { Value } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
+import { Value } from './gen/lekko/client/v1beta1/configuration_service_pb';
 import { Transport } from '@connectrpc/connect';
 import { TransportClient } from './client';
 import { ClientContext } from './context/context';

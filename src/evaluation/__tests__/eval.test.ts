@@ -1,4 +1,4 @@
-import { Feature } from '@buf/lekkodev_cli.bufbuild_es/lekko/feature/v1beta1/feature_pb';
+import { Feature } from '../../gen/lekko/feature/v1beta1/feature_pb';
 import { Int64Value, createRegistry } from '@bufbuild/protobuf';
 import { ClientContext } from '../../context/context';
 import { config, constraintValue, constriant, defaultValue, tree } from '../../fixtures/eval';

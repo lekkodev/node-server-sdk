@@ -1,4 +1,4 @@
-import { DeregisterClientResponse, RegisterClientResponse, SendFlagEvaluationMetricsResponse } from '@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb';
+import { DeregisterClientResponse, RegisterClientResponse, SendFlagEvaluationMetricsResponse } from '../../gen/lekko/backend/v1beta1/distribution_service_pb';
 import { Any, proto3 } from '@bufbuild/protobuf';
 import git from 'isomorphic-git';
 import { dump } from 'js-yaml';

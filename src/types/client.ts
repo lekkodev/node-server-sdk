@@ -1,6 +1,6 @@
 import { Any } from "@bufbuild/protobuf";
 import { ClientContext } from "../context/context";
-import { ListContentsResponse } from '@buf/lekkodev_sdk.bufbuild_es/lekko/server/v1beta1/sdk_pb';
+import { ListContentsResponse } from '../gen/lekko/server/v1beta1/sdk_pb';
 
 export interface AsyncClient {
     getBool(namespace: string, key: string, ctx?: ClientContext): Promise<boolean>;

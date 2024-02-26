@@ -1,4 +1,4 @@
-import { DeregisterClientResponse, GetRepositoryVersionResponse, RegisterClientResponse, SendFlagEvaluationMetricsRequest, SendFlagEvaluationMetricsResponse } from "@buf/lekkodev_cli.bufbuild_es/lekko/backend/v1beta1/distribution_service_pb";
+import { DeregisterClientResponse, GetRepositoryVersionResponse, RegisterClientResponse, SendFlagEvaluationMetricsRequest, SendFlagEvaluationMetricsResponse } from "../../gen/lekko/backend/v1beta1/distribution_service_pb";
 import { ClientContext } from "../../context/context";
 import { jsonConfigType, protoAny, testContents } from '../../fixtures/contents';
 import { ClientTransportBuilder, TransportProtocol } from "../../transport-builder";

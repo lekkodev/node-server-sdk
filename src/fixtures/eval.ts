@@ -1,5 +1,5 @@
-import { Constraint, Feature, FeatureType, Any as LekkoAny, Tree } from '@buf/lekkodev_cli.bufbuild_es/lekko/feature/v1beta1/feature_pb';
-import { Rule } from '@buf/lekkodev_cli.bufbuild_es/lekko/rules/v1beta3/rules_pb';
+import { Constraint, Feature, FeatureType, Any as LekkoAny, Tree } from '../gen/lekko/feature/v1beta1/feature_pb';
+import { Rule } from '../gen/lekko/rules/v1beta3/rules_pb';
 import { Any, BoolValue, DoubleValue, Int64Value, StringValue, Value } from '@bufbuild/protobuf';
 
 export const configKey = 'key';

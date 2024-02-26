@@ -1,5 +1,5 @@
-import { CallExpression_Bucket, ComparisonOperator, LogicalOperator, Rule } from '@buf/lekkodev_cli.bufbuild_es/lekko/rules/v1beta3/rules_pb';
-import { Value as LekkoValue } from '@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb';
+import { CallExpression_Bucket, ComparisonOperator, LogicalOperator, Rule } from '../gen/lekko/rules/v1beta3/rules_pb';
+import { Value as LekkoValue } from '../gen/lekko/client/v1beta1/configuration_service_pb';
 import { Value } from '@bufbuild/protobuf';
 import { h32 } from 'xxhashjs';
 import { ClientContext } from '../context/context';

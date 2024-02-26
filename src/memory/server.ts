@@ -1,5 +1,5 @@
-import { SDKService } from "@buf/lekkodev_sdk.connectrpc_es/lekko/server/v1beta1/sdk_connect";
-import { ConfigurationService } from "@buf/lekkodev_sdk.connectrpc_es/lekko/client/v1beta1/configuration_service_connect";
+import { SDKService } from "../gen/lekko/server/v1beta1/sdk_connect";
+import { ConfigurationService } from "../gen/lekko/client/v1beta1/configuration_service_connect";
 import { Code, ConnectError, ConnectRouter } from "@connectrpc/connect";
 import { connectNodeAdapter } from "@connectrpc/connect-node";
 import { cors as connectCors } from "@connectrpc/connect";
@@ -13,7 +13,7 @@ import {
   GetJSONValueResponse,
   GetProtoValueResponse,
   GetStringValueResponse,
-} from "@buf/lekkodev_sdk.bufbuild_es/lekko/client/v1beta1/configuration_service_pb";
+} from "../gen/lekko/client/v1beta1/configuration_service_pb";
 import { Client, DevClient } from "../types/client";
 import { ClientContext } from "../context/context";
 

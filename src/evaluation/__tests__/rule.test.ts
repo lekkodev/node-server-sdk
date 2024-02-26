@@ -1,4 +1,4 @@
-import { Atom, CallExpression, CallExpression_Bucket, ComparisonOperator, LogicalExpression, LogicalOperator, Rule } from '@buf/lekkodev_cli.bufbuild_es/lekko/rules/v1beta3/rules_pb';
+import { Atom, CallExpression, CallExpression_Bucket, ComparisonOperator, LogicalExpression, LogicalOperator, Rule } from '../../gen/lekko/rules/v1beta3/rules_pb';
 import { ClientContext } from '../../context/context';
 import { atom, rules } from '../../fixtures/rule';
 import evaluateRule from '../rule';
