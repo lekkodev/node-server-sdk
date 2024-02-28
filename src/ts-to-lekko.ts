@@ -6,6 +6,7 @@ import { TypeChecker } from "typescript";
 import fs = require("node:fs");
 import snakeCase = require("lodash.snakecase");
 import camelCase = require("lodash.camelcase");
+import { spawnSync } from "child_process";
 
 /*
     TODOs
@@ -153,13 +154,6 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
           "@type": "type.googleapis.com/google.protobuf.DoubleValue",
           value: new Number(expression.getText()),
         };
-      case ts.SyntaxKind.FirstLiteralToken:
-        // uh... wtf mate
-        // TODO: what is the case for this?
-        return {
-          "@type": "type.googleapis.com/google.protobuf.StringValue",
-          value: (expression as ts.StringLiteral).text,
-        };
       case ts.SyntaxKind.ObjectLiteralExpression:
         const fullText = (
           expression as ts.ObjectLiteralExpression
@@ -295,12 +289,24 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
               );
           }
         }
+
+        assert(config.key);
         const configJson = JSON.stringify(config, null, 2);
         fs.writeFileSync(
           repoPath + `/default/gen/json/${config.key}.json`,
           configJson
         );
-        // console.log(configJson);
+        const spawnReturns = spawnSync(
+          "lekko",
+          ["config", "gen", "-n", "default", "-c", config.key],
+          {
+            encoding: "utf-8",
+            cwd: repoPath,
+          }
+        );
+        if (spawnReturns.error !== undefined || spawnReturns.status !== 0) {
+          throw new Error("Failed to generate starlark");
+        }
 
         break;
       case ts.SyntaxKind.EndOfFileToken:
@@ -472,14 +478,35 @@ protofile += `package default.config.v1beta1;\n\n`;
 for (const key of keys) {
   protofile += `message ${key} {\n  ${registry[key].join("\n  ")}\n}\n\n`;
 }
-fs.writeFileSync(
-  repoPath + "/proto/default/config/v1beta1/default.proto",
-  protofile
+const protoPath = repoPath + "/proto/default/config/v1beta1/default.proto";
+fs.writeFileSync(protoPath, protofile);
+
+const bufGenTemplate = JSON.stringify({
+  version: "v1",
+  managed: { enabled: true },
+  plugins: [{ plugin: "buf.build/bufbuild/es:v1.7.2", out: "gen" }],
+});
+const spawnReturns = spawnSync(
+  "buf",
+  [
+    "generate",
+    "--template",
+    bufGenTemplate,
+    repoPath,
+    "--path",
+    protoPath,
+    "--output",
+    "./src",
+  ],
+  {
+    encoding: "utf-8",
+  }
 );
-console.log(protofile);
+if (spawnReturns.error !== undefined || spawnReturns.status !== 0) {
+  throw new Error(`Failed to generate proto bindings: ${spawnReturns.output}`);
+}
 
 for (const fileName of [filename]) {
-  //   console.log(fileName);
   const sourceFile = program.getSourceFile(fileName);
   assert(sourceFile);
   convertSourceFile(sourceFile, typeChecker);
