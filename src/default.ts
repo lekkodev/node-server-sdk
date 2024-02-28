@@ -66,12 +66,12 @@ export function getPuppyNumber({isCool, breed}: {isCool: string, breed: string})
 
 export function getGuardDog(): Dog {
 	return {
-		name: "Rex",
-		gender: "male",
-		healthRecord: {
-			vaccinations: [],
-			vetVisits: [new Date("2023-12-09")]
-		}
-	};
+    name: "Rex",
+    gender: "male",
+    healthRecord: {
+      vaccinations: [],
+      vetVisits: [],
+    },
+  };
 }
 
