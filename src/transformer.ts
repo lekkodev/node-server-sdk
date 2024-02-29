@@ -1,4 +1,4 @@
-
+/* eslint-disable */
 import * as ts from 'typescript';
 import { factory } from 'typescript';
 import { TransformerExtras } from "ts-patch";
@@ -15,10 +15,9 @@ export default function (
     const repo_root = '/Users/jonathan/src/teflon/config/';
 
     return (context: ts.TransformationContext) => {
-        var namespace: string | undefined;
+        let namespace: string | undefined;
 
-        function injectMagic(node: ts.Node): ts.Node {
-
+        function injectMagic(node: ts.Node): ts.Node | ts.Node[] {
             if (ts.isFunctionDeclaration(node)) {
                 const sig = program?.getTypeChecker().getSignatureFromDeclaration(node);
                 assert(sig);
@@ -27,8 +26,10 @@ export default function (
                 assert(namespace);
                 const functionName = node.name.getFullText().trim();
                 const configName = functionName.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`).replace(/get-/, '');
-                var getter: string | undefined = undefined;
+                let getter: string | undefined = undefined;
+                // @ts-ignore
                 const type = program?.getTypeChecker().getPromisedTypeOfPromise(sig.getReturnType());
+                // @ts-ignore
                 const storedConfig = JSON.parse(fs.readFileSync(repo_root + namespace + "/gen/json/" + configName + ".json"));
                 if (type.flags & ts.TypeFlags.String) {
                     getter = "getString";
@@ -53,23 +54,23 @@ export default function (
                     throw new Error(`Unsupported TypeScript type: ${type.flags} - ${program?.getTypeChecker().typeToString(type)}`);
                 }
                 if (getter === "getProto") {
-                    const protoTypeParts = storedConfig.tree.default["@type"].split(".")
+                    const protoTypeParts = storedConfig.tree.default["@type"].split(".");
                     const protoType = protoTypeParts[protoTypeParts.length - 1];
-                    return [   factory.createImportDeclaration(
+                    return [factory.createImportDeclaration(
                         undefined,
                         factory.createImportClause(
-                          false,
-                          undefined,
-                          factory.createNamedImports([factory.createImportSpecifier(
                             false,
                             undefined,
-                            factory.createIdentifier(protoType)
-                          )])
+                            factory.createNamedImports([factory.createImportSpecifier(
+                                false,
+                                undefined,
+                                factory.createIdentifier(protoType)
+                            )])
                         ),
                         factory.createStringLiteral(`./gen/${namespace}/config/v1beta1/${namespace}_pb`),
                         undefined
-                      ),
-                        ts.factory.updateFunctionDeclaration(
+                    ),
+                    ts.factory.updateFunctionDeclaration(
                         node,
                         node.modifiers,
                         node.asteriskToken,
@@ -141,7 +142,7 @@ export default function (
                         )
 
                     )
-                                ];
+                    ];
 
                 }
                 return ts.factory.updateFunctionDeclaration(
@@ -223,11 +224,10 @@ export default function (
                         ),
                         ts.factory.createStringLiteral("@lekko/node-server-sdk"),
                         undefined
-                    )
-                    // TODO refactor child returns so that we get the imports
+                    );
                     return ts.factory.updateSourceFile(node, [
                         importDeclaration,
-
+                        // @ts-ignore
                         ...ts.visitNodes(node.statements, injectMagic)
                     ]);
                 }
