@@ -298,7 +298,7 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
         );
         const spawnReturns = spawnSync(
           "lekko",
-          ["config", "gen", "-n", "default", "-c", config.key],
+          ["exp", "gen", "starlark", "-n", "default", "-c", config.key],
           {
             encoding: "utf-8",
             cwd: repoPath,
