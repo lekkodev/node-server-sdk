@@ -1,12 +1,14 @@
 #!/usr/bin/env node
-/* eslint-disable */
 import assert = require("assert");
-import * as ts from "typescript";
+import ts from "typescript";
 import { TypeChecker } from "typescript";
 import fs = require("node:fs");
+import path = require("node:path");
 import snakeCase = require("lodash.snakecase");
 import camelCase = require("lodash.camelcase");
+import kebabCase = require("lodash.kebabcase");
 import { spawnSync } from "child_process";
+import { program } from "commander";
 
 /*
     TODOs
@@ -16,7 +18,7 @@ import { spawnSync } from "child_process";
     * rewrite the code to be /less/ vomit inducing
     * wrapper meta-programming code to use it as a static fallback
     * command line args
-    
+
     Stretch:
     * Static Contexts (might make things easier tbh)
     * constants at the top of the file
@@ -79,7 +81,7 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
             throw new Error(
               `need to be able to handle: ${
                 ts.SyntaxKind[binaryExpr.operatorToken.kind]
-              }`
+              }`,
             );
         }
       case ts.SyntaxKind.ParenthesizedExpression:
@@ -88,7 +90,7 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
       // TODO other literal types
       default:
         throw new Error(
-          `need to be able to handle: ${ts.SyntaxKind[expression.kind]}`
+          `need to be able to handle: ${ts.SyntaxKind[expression.kind]}`,
         );
     }
   }
@@ -97,26 +99,26 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
     const block = ifStatement.thenStatement as ts.Block;
     if (block.statements.length != 1) {
       throw new Error(
-        `Must only contain return statement: ${block.getFullText()}`
+        `Must only contain return statement: ${block.getFullText()}`,
       );
     }
     if (ifStatement.elseStatement != undefined) {
       throw new Error(
-        `Else does not yet exist, sorry: ${ifStatement.getFullText()}`
+        `Else does not yet exist, sorry: ${ifStatement.getFullText()}`,
       );
     }
     return {
       rule: expressionToThing(ifStatement.expression),
       value: returnStatementToValue(
         block.statements[0] as ts.ReturnStatement,
-        returnType
+        returnType,
       ),
     };
   }
 
   function returnStatementToValue(
     returnNode: ts.ReturnStatement,
-    returnType: string
+    returnType: string,
   ) {
     const expression = returnNode.expression;
     assert(expression);
@@ -124,14 +126,12 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
   }
 
   function expressionToJsonValue(expression: ts.Expression) {
-    let o = {};
-    eval("o = " + expression.getFullText());
-    return o;
+    return Function(`return ${expression.getFullText()}`)();
   }
 
   function expressionToProtoValue(
     expression: ts.Expression,
-    protoType?: string
+    protoType?: string,
   ) {
     switch (expression.kind) {
       case ts.SyntaxKind.FalseKeyword:
@@ -147,7 +147,7 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
       case ts.SyntaxKind.StringLiteral:
         return {
           "@type": "type.googleapis.com/google.protobuf.StringValue",
-          value: eval(expression.getText()),
+          value: expressionToJsonValue(expression),
         };
       case ts.SyntaxKind.NumericLiteral:
         return {
@@ -155,18 +155,13 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
           value: new Number(expression.getText()),
         };
       case ts.SyntaxKind.ObjectLiteralExpression:
-        const fullText = (
-          expression as ts.ObjectLiteralExpression
-        ).getFullText();
-        let obj = {};
-        eval("obj = " + fullText);
         return {
-          ...obj,
-          "@type": `type.googleapis.com/default.config.v1beta1.${protoType}`,
+          ...expressionToJsonValue(expression),
+          "@type": `type.googleapis.com/${namespace}.config.v1beta1.${protoType}`,
         };
       default:
         throw new Error(
-          `need to be able to handle: ${ts.SyntaxKind[expression.kind]}`
+          `need to be able to handle: ${ts.SyntaxKind[expression.kind]}`,
         );
     }
   }
@@ -184,21 +179,17 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
     if (returnType.flags & ts.TypeFlags.Object) {
       return "FEATURE_TYPE_PROTO";
     }
-    throw new Error(`Unsupported type: ${returnType}!`);
+    throw new Error(
+      `Unsupported TypeScript type: ${returnType.flags} - ${tsProgram?.getTypeChecker().typeToString(returnType)}`,
+    );
   }
 
   function processNode(node: ts.Node) {
     switch (node.kind) {
       case ts.SyntaxKind.FunctionDeclaration:
-        const functionDeclarationStatement = node as ts.FunctionDeclaration;
-        // const config: Config = {
-        //     rules: [],
-        //     name: "",
-        //     type: "",
-        //     default: undefined
-        // };
+        const functionDeclaration = node as ts.FunctionDeclaration;
+        assert(functionDeclaration);
 
-        // const f = new Feature();
         type Tree = {
           default?: any;
           constraints: {
@@ -218,28 +209,33 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
           tree?: Tree;
         } = {};
 
-        if (functionDeclarationStatement.name === undefined) {
+        if (functionDeclaration.name === undefined) {
           throw new Error("Unparsable function name");
         }
-        const getterName =
-          functionDeclarationStatement.name.escapedText.toString();
+        const getterName = functionDeclaration.name.escapedText.toString();
         if (!/^\s*get[A-Z][A-Za-z]*$/.test(getterName)) {
           // no idea why that leading space is there..
           throw new Error(`Unparsable function name: "${getterName}"`);
         }
-        const sig = checker.getSignatureFromDeclaration(
-          functionDeclarationStatement
-        );
+        const sig = checker.getSignatureFromDeclaration(functionDeclaration);
         assert(sig);
 
-        config.key = snakeCase(getterName.substring(3));
+        config.key = kebabCase(getterName.substring(3));
 
-        // TODO check parameters
-        const returnType = sig.getReturnType();
+        // TODO: this doesn't work for some reason
+        // @ ts-expect-error
+        // const returnType: ts.Type = checker.getPromisedTypeOfPromise(
+        //   sig.getReturnType(),
+        // );
+        // console.log(returnType);
+        // console.log(functionDeclaration.type);
+        // console.log(sig);
+        const promiseType = typeChecker.getReturnTypeOfSignature(sig);
+        const returnType = promiseType.aliasTypeArguments?.find(() => true);
+        assert(returnType);
 
         // todo support nested interfaces
         config.type = getLekkoType(returnType);
-        // TODO: set default
         const tree: Tree = {
           constraints: [],
         };
@@ -259,16 +255,16 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
           valueType = checker.typeToString(
             returnType,
             undefined,
-            ts.TypeFormatFlags.None
+            ts.TypeFormatFlags.None,
           );
         }
-        assert(functionDeclarationStatement.body);
-        for (const statement of functionDeclarationStatement.body.statements) {
+        assert(functionDeclaration.body);
+        for (const statement of functionDeclaration.body.statements) {
           switch (statement.kind) {
             case ts.SyntaxKind.IfStatement:
               const { rule, value } = ifStatementToRule(
                 statement as ts.IfStatement,
-                valueType
+                valueType,
               );
               config.tree.constraints.push({
                 value: value,
@@ -280,29 +276,28 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
               // TODO refactor for all return types
               tree.default = returnStatementToValue(
                 statement as ts.ReturnStatement,
-                valueType
+                valueType,
               );
               break;
             default:
               throw new Error(
-                `Unable to handle: ${ts.SyntaxKind[statement.kind]}`
+                `Unable to handle: ${ts.SyntaxKind[statement.kind]}`,
               );
           }
         }
 
         assert(config.key);
         const configJson = JSON.stringify(config, null, 2);
-        fs.writeFileSync(
-          repoPath + `/default/gen/json/${config.key}.json`,
-          configJson
-        );
+        const jsonDir = path.join(repoPath, namespace, "gen", "json");
+        fs.mkdirSync(jsonDir, { recursive: true });
+        fs.writeFileSync(path.join(jsonDir, `${config.key}.json`), configJson);
         const spawnReturns = spawnSync(
           "lekko",
-          ["exp", "gen", "starlark", "-n", "default", "-c", config.key],
+          ["exp", "gen", "starlark", "-n", namespace, "-c", config.key],
           {
             encoding: "utf-8",
             cwd: repoPath,
-          }
+          },
         );
         if (spawnReturns.error !== undefined || spawnReturns.status !== 0) {
           throw new Error("Failed to generate starlark");
@@ -319,7 +314,7 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
         throw new Error(
           `We are unable to parse this yet.  Please contact us if you feel like we should be able to handle ${
             ts.SyntaxKind[node.kind]
-          }`
+          }`,
         );
     }
   }
@@ -332,7 +327,7 @@ function convertInterfaceToProto(
   typeChecker: TypeChecker,
   registry: {
     [key: string]: string[];
-  }
+  },
 ) {
   const name = node.name.getText();
   const fields = node.members.map((member, idx) => {
@@ -345,14 +340,14 @@ function convertInterfaceToProto(
         propertyType,
         propertyName,
         name,
-        registry
+        registry,
       );
       return `${protoType} ${propertyName} = ${idx + 1};`;
     } else {
       throw new Error(
         `Unsupported member type: ${
           ts.SyntaxKind[member.kind]
-        } - ${member.getFullText()}`
+        } - ${member.getFullText()}`,
       );
     }
   });
@@ -362,7 +357,7 @@ function convertInterfaceToProto(
 function symbolToFields(
   node: ts.Symbol,
   typeChecker: ts.TypeChecker,
-  name: string
+  name: string,
 ) {
   if (node.members == undefined) {
     throw new Error(`Error: Programmer is incompetent.  Replace with ChatGPT.`);
@@ -375,7 +370,7 @@ function symbolToFields(
       propertyType,
       fieldName,
       name,
-      registry
+      registry,
     );
     return `${protoType} ${fieldName} = ${idx + 1};`;
   });
@@ -388,7 +383,7 @@ function getProtoTypeFromTypeScriptType(
   name: string,
   registry: {
     [key: string]: string[];
-  }
+  },
 ): string {
   if (type.flags & ts.TypeFlags.String) {
     return "string";
@@ -402,7 +397,7 @@ function getProtoTypeFromTypeScriptType(
   if (type.flags & ts.TypeFlags.Union) {
     // If all the types are ObjectLiteral - do we want to use that type, or make an enum?  Do we want to do oneOf for the others?
     throw new Error(
-      `Error: Programmer didn't think through how to handle all unions.  Replace with ChatGPT.`
+      `Error: Programmer didn't think through how to handle all unions.  Replace with ChatGPT.`,
     );
     //return name + "_" + propertyName.charAt(0).toUpperCase() + propertyName.slice(1);
   }
@@ -425,7 +420,7 @@ function getProtoTypeFromTypeScriptType(
           innerType,
           propertyName,
           name,
-          registry
+          registry,
         )
       );
     } else if (symbol.escapedName === "Date") {
@@ -435,29 +430,40 @@ function getProtoTypeFromTypeScriptType(
       assert(symbol);
       registry[childName] ||= [];
       registry[childName].push(
-        ...symbolToFields(symbol, typeChecker, childName)
+        ...symbolToFields(symbol, typeChecker, childName),
       );
     }
     return childName;
   }
   throw new Error(
     `Unsupported TypeScript type: ${type.flags} - ${typeChecker.typeToString(
-      type
-    )}`
+      type,
+    )}`,
   );
 }
 
-const repoPath =
-  "/Users/sergey/Library/Application Support/Lekko/Config Repositories/default";
-const filename = "./src/default.ts"; //process.argv.slice(2);
-const program = ts.createProgram([filename], {
+program
+  .option(
+    "-r, --repo-path <string>",
+    "path to the config repo",
+    "/Users/sergey/Library/Application Support/Lekko/Config Repositories/default",
+  )
+  .option("-f, --filename <string>", "ts file to convert to Lekko");
+program.parse();
+const options = program.opts();
+
+const repoPath = String(options.repoPath);
+const filename = String(options.filename);
+const namespace = path.basename(filename, path.extname(filename));
+
+const tsProgram = ts.createProgram([filename], {
   target: ts.ScriptTarget.ES2022,
 });
-const typeChecker = program.getTypeChecker();
-const sourceFile = program.getSourceFile(filename);
+const typeChecker = tsProgram.getTypeChecker();
+const sourceFile = tsProgram.getSourceFile(filename);
 assert(sourceFile);
 const interfaceNodes = sourceFile.statements.filter((node) =>
-  ts.isInterfaceDeclaration(node)
+  ts.isInterfaceDeclaration(node),
 );
 
 const registry: { [key: string]: string[] } = {};
@@ -465,7 +471,7 @@ interfaceNodes.forEach((interfaceNode) => {
   convertInterfaceToProto(
     interfaceNode as ts.InterfaceDeclaration,
     typeChecker,
-    registry
+    registry,
   );
 });
 
@@ -474,11 +480,13 @@ let protofile = "";
 const keys = Object.keys(registry);
 keys.sort((a, b) => b.length - a.length);
 protofile += `syntax = "proto3";\n\n`;
-protofile += `package default.config.v1beta1;\n\n`;
+protofile += `package ${namespace}.config.v1beta1;\n\n`;
 for (const key of keys) {
   protofile += `message ${key} {\n  ${registry[key].join("\n  ")}\n}\n\n`;
 }
-const protoPath = repoPath + "/proto/default/config/v1beta1/default.proto";
+const protoDir = path.join(repoPath, "proto", namespace, "config", "v1beta1");
+const protoPath = path.join(protoDir, `${namespace}.proto`);
+fs.mkdirSync(protoDir, { recursive: true });
 fs.writeFileSync(protoPath, protofile);
 
 const bufGenTemplate = JSON.stringify({
@@ -496,19 +504,19 @@ const spawnReturns = spawnSync(
     "--path",
     protoPath,
     "--output",
+    // TODO: detect out dir
     "./src",
   ],
   {
     encoding: "utf-8",
-  }
+  },
 );
 if (spawnReturns.error !== undefined || spawnReturns.status !== 0) {
   throw new Error(`Failed to generate proto bindings: ${spawnReturns.output}`);
 }
 
 for (const fileName of [filename]) {
-  const sourceFile = program.getSourceFile(fileName);
+  const sourceFile = tsProgram.getSourceFile(fileName);
   assert(sourceFile);
   convertSourceFile(sourceFile, typeChecker);
 }
-

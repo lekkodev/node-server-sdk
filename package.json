@@ -6,11 +6,15 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "bin": {
-    "ts-to-lekko": "bin/ts-to-lekko.ts",
+    "ts-to-lekko": "bin/ts-to-lekko.js",
     "lekko-server": "bin/server.js"
   },
   "scripts": {
-    "build": "genversion -use src/version.js && tsc && esbuild src/index.ts --platform=node --bundle --outdir=lib/ --global-name=lekko && esbuild src/server.ts --platform=node --bundle --outfile=bin/server.js",
+    "genversion": "genversion -use src/version.js",
+    "build-index": "esbuild src/index.ts --platform=node --bundle --outdir=lib/ --global-name=lekko",
+    "build-server": "esbuild src/server.ts --platform=node --bundle --outfile=bin/server.js",
+    "build-ts-to-lekko": "esbuild src/ts-to-lekko.ts --platform=node --bundle --outfile=bin/ts-to-lekko.js",
+    "build": "npm run -s genversion && tsc && npm run -s build-index && npm run -s build-server && npm run -s build-ts-to-lekko",
     "lint": "eslint . --ext .ts",
     "test": "jest --config jestconfig.json",
     "bufgen": "rm -rf src/gen/lekko && buf generate buf.build/lekkodev/sdk --type lekko.client.v1beta1,lekko.server.v1beta1 && buf generate buf.build/lekkodev/cli --type lekko.feature.v1beta1,lekko.rules.v1beta3,lekko.backend.v1beta1",
@@ -42,6 +46,7 @@
     "@types/cors": "^2.8.17",
     "@types/jest": "^29.4.0",
     "@types/lodash.camelcase": "^4.3.9",
+    "@types/lodash.kebabcase": "^4.1.9",
     "@types/lodash.snakecase": "^4.1.9",
     "@types/node": "^18.13.0",
     "@types/xxhashjs": "^0.2.2",
@@ -75,6 +80,7 @@
     "isomorphic-git": "^1.24.5",
     "js-yaml": "^4.1.0",
     "lodash.camelcase": "^4.3.0",
+    "lodash.kebabcase": "^4.1.1",
     "lodash.snakecase": "^4.1.1",
     "memfs": "^4.2.1",
     "node-watch": "^0.7.4",
