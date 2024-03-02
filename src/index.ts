@@ -182,10 +182,66 @@ async function initClient(options?: LocalOptions | BackendOptions): Promise<Clie
   }
 }
 
-function sdkVersion() : string {
-  const v = (version.startsWith('v')) ? version : `v${version}`;
+type LekkoGlobal = {
+  lekkoClient?: Client;
+};
+
+const _global = globalThis as LekkoGlobal;
+
+async function getClient(): Promise<Client> {
+  let client = _global.lekkoClient;
+  if (client === undefined) {
+    client = await initClient();
+    _global.lekkoClient = client;
+  }
+  return client;
+}
+
+async function setupClient(options?: LocalOptions | BackendOptions): Promise<void> {
+  let _options = options;
+  if (_options === undefined) {
+    const fullRepoName = process.env.LEKKO_REPO_NAME;
+    const repoPath = process.env.LEKKO_REPO_PATH;
+    const apiKey = process.env.LEKKO_API_KEY;
+    if (fullRepoName !== undefined) {
+      const parts = fullRepoName.split('/');
+      if (parts.length != 2) {
+        throw new Error(
+          `Invalid format for LEKKO_REPO_NAME: ${fullRepoName}, should be <owner>/<repo>.`,
+        );
+      }
+      const [repoOwner, repoName] = parts;
+      _options = {
+        repositoryOwner: repoOwner,
+        repositoryName: repoName,
+        apiKey: apiKey,
+      };
+    } else if (repoPath !== undefined) {
+      _options = {
+        path: repoPath,
+      };
+    }
+  }
+  _global.lekkoClient = await initClient(_options);
+}
+
+function sdkVersion(): string {
+  const v = version.startsWith('v') ? version : `v${version}`;
   return 'node-' + v;
 }
 
-export { ClientContext, TransportClient, TransportProtocol, Value, initClient, initAPIClient, initCachedAPIClient, initCachedGitClient, initSidecarClient, type Client, type AsyncClient };
-
+export {
+  ClientContext,
+  TransportClient,
+  TransportProtocol,
+  Value,
+  initClient,
+  initAPIClient,
+  initCachedAPIClient,
+  initCachedGitClient,
+  initSidecarClient,
+  type Client,
+  type AsyncClient,
+  getClient,
+  setupClient,
+};
