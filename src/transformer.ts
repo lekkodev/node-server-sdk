@@ -81,15 +81,28 @@ export default function (
                         factory.createBlock(
                             [factory.createTryStatement(
                                 factory.createBlock([
-                                    factory.createExpressionStatement(factory.createBinaryExpression(
-                                        factory.createIdentifier("config"),
-                                        factory.createToken(ts.SyntaxKind.EqualsToken),
-                                        factory.createNewExpression(
-                                            factory.createIdentifier(protoType),
-                                            undefined,
-                                            []
-                                        )
-                                    )),
+                                    factory.createVariableStatement(
+                                        factory.createModifiersFromModifierFlags(
+                                            ts.ModifierFlags.Const,
+                                        ),
+                                        factory.createVariableDeclarationList(
+                                            [
+                                                factory.createVariableDeclaration(
+                                                    "config",
+                                                    undefined,
+                                                    undefined,
+                                                    factory.createNewExpression(
+                                                        factory.createIdentifier(
+                                                            protoType,
+                                                        ),
+                                                        undefined,
+                                                        [],
+                                                    ),
+                                                ),
+                                            ],
+                                            ts.NodeFlags.Const,
+                                        ),
+                                    ),
                                     factory.createExpressionStatement(factory.createCallExpression(
                                         factory.createPropertyAccessExpression(
                                             factory.createIdentifier("config"),
