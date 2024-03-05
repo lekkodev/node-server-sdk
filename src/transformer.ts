@@ -61,13 +61,9 @@ export default function (
                         factory.createImportClause(
                             false,
                             undefined,
-                            factory.createNamedImports([factory.createImportSpecifier(
-                                false,
-                                undefined,
-                                factory.createIdentifier(protoType)
-                            )])
+                            ts.factory.createNamespaceImport(ts.factory.createIdentifier("lekko_pb"))
                         ),
-                        factory.createStringLiteral(`./gen/${namespace}/config/v1beta1/${namespace}_pb`),
+                        factory.createStringLiteral(`./gen/${namespace}/config/v1beta1/${namespace}_pb.js`),
                         undefined
                     ),
                     ts.factory.updateFunctionDeclaration(
@@ -92,8 +88,11 @@ export default function (
                                                     undefined,
                                                     undefined,
                                                     factory.createNewExpression(
-                                                        factory.createIdentifier(
-                                                            protoType,
+                                                        factory.createPropertyAccessExpression(
+                                                            factory.createIdentifier("lekko_pb"),
+                                                            factory.createIdentifier(
+                                                                protoType,
+                                                            ),
                                                         ),
                                                         undefined,
                                                         [],

@@ -32,10 +32,14 @@ import { program } from "commander";
 
 function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
   function exprToContextKey(expr: ts.Expression): string {
-    if (expr.kind != ts.SyntaxKind.Identifier) {
-      throw new Error("context key should be an identifier");
+    switch (expr.kind) {
+      case ts.SyntaxKind.Identifier:
+        return expr.getText();
+      case ts.SyntaxKind.PropertyAccessExpression:
+        return (expr as ts.PropertyAccessExpression).name.getText();
+      default:
+        throw new Error(`need to be able to handle: ${ts.SyntaxKind[expr.kind]}`);
     }
-    return expr.getText();
   }
 
   type AtomRule = {
@@ -70,18 +74,13 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
           case ts.SyntaxKind.AmpersandAmpersandToken:
             return {
               logicalExpression: {
-                rules: [
-                  expressionToThing(binaryExpr.left),
-                  expressionToThing(binaryExpr.right),
-                ],
+                rules: [expressionToThing(binaryExpr.left), expressionToThing(binaryExpr.right)],
                 logicalOperator: "LOGICAL_OPERATOR_AND",
               },
             };
           default:
             throw new Error(
-              `need to be able to handle: ${
-                ts.SyntaxKind[binaryExpr.operatorToken.kind]
-              }`,
+              `need to be able to handle: ${ts.SyntaxKind[binaryExpr.operatorToken.kind]}`,
             );
         }
       case ts.SyntaxKind.ParenthesizedExpression:
@@ -89,37 +88,25 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
         return expressionToThing(expr.expression);
       // TODO other literal types
       default:
-        throw new Error(
-          `need to be able to handle: ${ts.SyntaxKind[expression.kind]}`,
-        );
+        throw new Error(`need to be able to handle: ${ts.SyntaxKind[expression.kind]}`);
     }
   }
 
   function ifStatementToRule(ifStatement: ts.IfStatement, returnType: string) {
     const block = ifStatement.thenStatement as ts.Block;
     if (block.statements.length != 1) {
-      throw new Error(
-        `Must only contain return statement: ${block.getFullText()}`,
-      );
+      throw new Error(`Must only contain return statement: ${block.getFullText()}`);
     }
     if (ifStatement.elseStatement != undefined) {
-      throw new Error(
-        `Else does not yet exist, sorry: ${ifStatement.getFullText()}`,
-      );
+      throw new Error(`Else does not yet exist, sorry: ${ifStatement.getFullText()}`);
     }
     return {
       rule: expressionToThing(ifStatement.expression),
-      value: returnStatementToValue(
-        block.statements[0] as ts.ReturnStatement,
-        returnType,
-      ),
+      value: returnStatementToValue(block.statements[0] as ts.ReturnStatement, returnType),
     };
   }
 
-  function returnStatementToValue(
-    returnNode: ts.ReturnStatement,
-    returnType: string,
-  ) {
+  function returnStatementToValue(returnNode: ts.ReturnStatement, returnType: string) {
     const expression = returnNode.expression;
     assert(expression);
     return expressionToProtoValue(expression, returnType);
@@ -129,10 +116,7 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
     return Function(`return ${expression.getFullText()}`)();
   }
 
-  function expressionToProtoValue(
-    expression: ts.Expression,
-    protoType?: string,
-  ) {
+  function expressionToProtoValue(expression: ts.Expression, protoType?: string) {
     switch (expression.kind) {
       case ts.SyntaxKind.FalseKeyword:
         return {
@@ -160,9 +144,7 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
           "@type": `type.googleapis.com/${namespace}.config.v1beta1.${protoType}`,
         };
       default:
-        throw new Error(
-          `need to be able to handle: ${ts.SyntaxKind[expression.kind]}`,
-        );
+        throw new Error(`need to be able to handle: ${ts.SyntaxKind[expression.kind]}`);
     }
   }
 
@@ -246,26 +228,19 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
           valueType = (returnType as any).intrinsicName;
         } else {
           /*
-                    const symbol = returnType.getSymbol();
-                    assert(symbol);
-                    const declarations = symbol.getDeclarations();
-                    assert(declarations);
-                    const interfaceDeclaration = declarations.find(ts.isInterfaceDeclaration);
-                    */
-          valueType = checker.typeToString(
-            returnType,
-            undefined,
-            ts.TypeFormatFlags.None,
-          );
+          const symbol = returnType.getSymbol();
+          assert(symbol);
+          const declarations = symbol.getDeclarations();
+          assert(declarations);
+          const interfaceDeclaration = declarations.find(ts.isInterfaceDeclaration);
+          */
+          valueType = checker.typeToString(returnType, undefined, ts.TypeFormatFlags.None);
         }
         assert(functionDeclaration.body);
         for (const statement of functionDeclaration.body.statements) {
           switch (statement.kind) {
             case ts.SyntaxKind.IfStatement:
-              const { rule, value } = ifStatementToRule(
-                statement as ts.IfStatement,
-                valueType,
-              );
+              const { rule, value } = ifStatementToRule(statement as ts.IfStatement, valueType);
               config.tree.constraints.push({
                 value: value,
                 ruleAstNew: rule,
@@ -274,15 +249,10 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
             case ts.SyntaxKind.ReturnStatement:
               // TODO check that it's only 3
               // TODO refactor for all return types
-              tree.default = returnStatementToValue(
-                statement as ts.ReturnStatement,
-                valueType,
-              );
+              tree.default = returnStatementToValue(statement as ts.ReturnStatement, valueType);
               break;
             default:
-              throw new Error(
-                `Unable to handle: ${ts.SyntaxKind[statement.kind]}`,
-              );
+              throw new Error(`Unable to handle: ${ts.SyntaxKind[statement.kind]}`);
           }
         }
 
@@ -345,20 +315,14 @@ function convertInterfaceToProto(
       return `${protoType} ${propertyName} = ${idx + 1};`;
     } else {
       throw new Error(
-        `Unsupported member type: ${
-          ts.SyntaxKind[member.kind]
-        } - ${member.getFullText()}`,
+        `Unsupported member type: ${ts.SyntaxKind[member.kind]} - ${member.getFullText()}`,
       );
     }
   });
   registry[name] = fields;
 }
 
-function symbolToFields(
-  node: ts.Symbol,
-  typeChecker: ts.TypeChecker,
-  name: string,
-) {
+function symbolToFields(node: ts.Symbol, typeChecker: ts.TypeChecker, name: string) {
   if (node.members == undefined) {
     throw new Error(`Error: Programmer is incompetent.  Replace with ChatGPT.`);
   }
@@ -404,9 +368,7 @@ function getProtoTypeFromTypeScriptType(
   if (type.flags & ts.TypeFlags.Object) {
     const camelCasePropertyName = camelCase(propertyName);
     const childName =
-      name +
-      camelCasePropertyName.charAt(0).toUpperCase() +
-      camelCasePropertyName.slice(1);
+      name + camelCasePropertyName.charAt(0).toUpperCase() + camelCasePropertyName.slice(1);
     const symbol = type.getSymbol();
     assert(symbol);
     if (symbol.escapedName === "Array") {
@@ -415,13 +377,7 @@ function getProtoTypeFromTypeScriptType(
       let innerType = typeArgs[0];
       return (
         "repeated " +
-        getProtoTypeFromTypeScriptType(
-          typeChecker,
-          innerType,
-          propertyName,
-          name,
-          registry,
-        )
+        getProtoTypeFromTypeScriptType(typeChecker, innerType, propertyName, name, registry)
       );
     } else if (symbol.escapedName === "Date") {
       return "int32"; // TODO dates are stupid
@@ -429,17 +385,11 @@ function getProtoTypeFromTypeScriptType(
       const symbol = type.getSymbol();
       assert(symbol);
       registry[childName] ||= [];
-      registry[childName].push(
-        ...symbolToFields(symbol, typeChecker, childName),
-      );
+      registry[childName].push(...symbolToFields(symbol, typeChecker, childName));
     }
     return childName;
   }
-  throw new Error(
-    `Unsupported TypeScript type: ${type.flags} - ${typeChecker.typeToString(
-      type,
-    )}`,
-  );
+  throw new Error(`Unsupported TypeScript type: ${type.flags} - ${typeChecker.typeToString(type)}`);
 }
 
 program
@@ -455,6 +405,7 @@ const options = program.opts();
 const repoPath = String(options.repoPath);
 const filename = String(options.filename);
 const namespace = path.basename(filename, path.extname(filename));
+const parentDir = path.dirname(filename);
 
 const tsProgram = ts.createProgram([filename], {
   target: ts.ScriptTarget.ES2022,
@@ -462,17 +413,11 @@ const tsProgram = ts.createProgram([filename], {
 const typeChecker = tsProgram.getTypeChecker();
 const sourceFile = tsProgram.getSourceFile(filename);
 assert(sourceFile);
-const interfaceNodes = sourceFile.statements.filter((node) =>
-  ts.isInterfaceDeclaration(node),
-);
+const interfaceNodes = sourceFile.statements.filter((node) => ts.isInterfaceDeclaration(node));
 
 const registry: { [key: string]: string[] } = {};
 interfaceNodes.forEach((interfaceNode) => {
-  convertInterfaceToProto(
-    interfaceNode as ts.InterfaceDeclaration,
-    typeChecker,
-    registry,
-  );
+  convertInterfaceToProto(interfaceNode as ts.InterfaceDeclaration, typeChecker, registry);
 });
 
 let protofile = "";
@@ -492,21 +437,17 @@ fs.writeFileSync(protoPath, protofile);
 const bufGenTemplate = JSON.stringify({
   version: "v1",
   managed: { enabled: true },
-  plugins: [{ plugin: "buf.build/bufbuild/es:v1.7.2", out: "gen" }],
+  plugins: [
+    {
+      plugin: "buf.build/bufbuild/es:v1.7.2",
+      out: "gen",
+      opt: ["js_import_style=legacy_commonjs"],
+    },
+  ],
 });
 const spawnReturns = spawnSync(
   "buf",
-  [
-    "generate",
-    "--template",
-    bufGenTemplate,
-    repoPath,
-    "--path",
-    protoPath,
-    "--output",
-    // TODO: detect out dir
-    "./src",
-  ],
+  ["generate", "--template", bufGenTemplate, repoPath, "--path", protoPath, "--output", parentDir],
   {
     encoding: "utf-8",
   },
