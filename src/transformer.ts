@@ -27,6 +27,11 @@ export default function (
                 let getter: string | undefined = undefined;
                 // @ts-ignore
                 const type = program?.getTypeChecker().getPromisedTypeOfPromise(sig.getReturnType());
+
+
+                // @ts-ignore
+                const paramsAsBareObj = sig.parameters[0].valueDeclaration.getChildren()[0].getFullText();
+
                 // @ts-ignore
                 const storedConfig = JSON.parse(fs.readFileSync(repo_root + namespace + "/gen/json/" + configName + ".json"));
                 if (type.flags & ts.TypeFlags.String) {
@@ -132,7 +137,7 @@ export default function (
                                                             factory.createIdentifier("fromJSON")
                                                         ),
                                                         undefined,
-                                                        [factory.createIdentifier("args")]
+                                                        [factory.createIdentifier(paramsAsBareObj)]
                                                     )
                                                 ]
                                             ),
@@ -200,7 +205,7 @@ export default function (
                                                     factory.createIdentifier("fromJSON")
                                                 ),
                                                 undefined,
-                                                [factory.createIdentifier("args")]
+                                                [factory.createIdentifier(paramsAsBareObj)]
                                             )
                                         ]
                                     )))],
