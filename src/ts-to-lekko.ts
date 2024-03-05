@@ -4,6 +4,7 @@ import assert = require("assert");
 import ts from "typescript";
 import { TypeChecker } from "typescript";
 import fs = require("node:fs");
+import os = require("node:os");
 import path = require("node:path");
 import snakeCase = require("lodash.snakecase");
 import camelCase = require("lodash.camelcase");
