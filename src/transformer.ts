@@ -4,13 +4,14 @@ import { factory } from 'typescript';
 import { TransformerExtras } from "ts-patch";
 import assert from 'assert';
 import * as fs from "fs";
+import * as os from "os";
 
 export default function (
     program?: ts.Program,
     pluginConfig?: any,
     transformerExtras?: TransformerExtras,
 ) {
-    const repo_root = '/Users/jonathan/Library/Application Support/Lekko/Config Repositories/default/';
+    const repo_root = os.homedir() + '/Library/Application Support/Lekko/Config Repositories/default/';
 
     return (context: ts.TransformationContext) => {
         let namespace: string | undefined;
