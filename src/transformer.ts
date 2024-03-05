@@ -35,7 +35,7 @@ export default function (
                     ?.getTypeChecker()
                     // @ts-ignore
                     .getPromisedTypeOfPromise(sig.getReturnType());
-
+                assert(type);
                 // @ts-ignore
                 const paramsAsBareObj = sig.parameters[0].valueDeclaration.getChildren()[0].getFullText();
 
