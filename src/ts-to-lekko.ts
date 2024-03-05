@@ -1,16 +1,15 @@
 #!/usr/bin/env node
 /* eslint-disable no-case-declarations */
-import assert = require("assert");
-import ts from "typescript";
-import { TypeChecker } from "typescript";
-import fs = require("node:fs");
-import os = require("node:os");
-import path = require("node:path");
-import snakeCase = require("lodash.snakecase");
-import camelCase = require("lodash.camelcase");
-import kebabCase = require("lodash.kebabcase");
+import assert from "assert";
 import { spawnSync } from "child_process";
 import { program } from "commander";
+import camelCase from "lodash.camelcase";
+import kebabCase from "lodash.kebabcase";
+import snakeCase from "lodash.snakecase";
+import fs from "node:fs";
+import path from "node:path";
+import os from "os";
+import ts, { TypeChecker } from "typescript";
 
 /*
     TODOs
@@ -218,7 +217,15 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
                 // console.log(functionDeclaration.type);
                 // console.log(sig);
                 const promiseType = typeChecker.getReturnTypeOfSignature(sig);
-                const returnType = promiseType.aliasTypeArguments?.find(() => true);
+                let returnType: ts.Type | undefined;
+                // @ts-ignore
+                if (promiseType.objectFlags & ts.ObjectFlags.Reference) {
+                    const referenceType = promiseType as ts.TypeReference;
+                    // @ts-ignore
+                    returnType = referenceType.resolvedTypeArguments?.find(() => true);
+                } else {
+                    returnType = promiseType.aliasTypeArguments?.find(() => true);
+                }
                 assert(returnType);
 
                 // todo support nested interfaces
