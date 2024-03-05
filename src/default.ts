@@ -15,7 +15,6 @@ enum Environment {
 	Production = "Production",
 };
 */
-
 export interface Dog {
 	name: string;
 	gender: string;
@@ -23,15 +22,12 @@ export interface Dog {
 	healthRecord: {
 		vaccinations: {
 			type: string;
-			date: Date;
 		}[];
-		vetVisits: Date[];
-
 	};
 }
 
 
-export function getPuppyFlag({isCool, breed}: {isCool: string, breed: string}):  boolean {
+export async function getPuppyFlag({isCool, breed}: {isCool: string, breed: string}):  Promise<boolean> {
 	if (isCool === "foo") {
 		return true;
 	}
@@ -44,7 +40,7 @@ export function getPuppyFlag({isCool, breed}: {isCool: string, breed: string}): 
 	return false;
 }
 
-export function getPuppyFartRisk({isCool, breed}: {isCool: string, breed: string}):  string {
+export async function getPuppyFartRisk({isCool, breed}: {isCool: string, breed: string}):  Promise<string> {
 	if (isCool === "foo") {
 		return "Deadly";
 	}
@@ -57,21 +53,19 @@ export function getPuppyFartRisk({isCool, breed}: {isCool: string, breed: string
 	return "Use Caution";
 }
 
-export function getPuppyNumber({isCool, breed}: {isCool: string, breed: string}):  number {
+export async function getPuppyNumber({isCool, breed}: {isCool: string, breed: string}):  Promise<number> {
 	if (isCool === "foo") {
 		return 6;
 	}
 	return 9;
 }
 
-export function getGuardDog(): Dog {
+export async function getGuardDog(): Promise<Dog> {
 	return {
     name: "Rex",
     gender: "male",
     healthRecord: {
-      vaccinations: [],
-      vetVisits: [],
+      vaccinations: []
     },
   };
 }
-

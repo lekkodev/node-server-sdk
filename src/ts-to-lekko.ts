@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-case-declarations */
 import assert = require("assert");
 import ts from "typescript";
 import { TypeChecker } from "typescript";
@@ -257,12 +258,13 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
         }
 
         assert(config.key);
+        
         const configJson = JSON.stringify(config, null, 2);
         const jsonDir = path.join(repoPath, namespace, "gen", "json");
         fs.mkdirSync(jsonDir, { recursive: true });
         fs.writeFileSync(path.join(jsonDir, `${config.key}.json`), configJson);
         const spawnReturns = spawnSync(
-          "lekko",
+          "/Users/jonathan/src/cli/lekko", // TODO
           ["exp", "gen", "starlark", "-n", namespace, "-c", config.key],
           {
             encoding: "utf-8",
@@ -270,7 +272,7 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
           },
         );
         if (spawnReturns.error !== undefined || spawnReturns.status !== 0) {
-          throw new Error("Failed to generate starlark");
+          throw new Error(`Failed to generate starlark for ${config.key}`);
         }
 
         break;

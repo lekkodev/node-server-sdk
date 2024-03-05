@@ -5,14 +5,12 @@ import { TransformerExtras } from "ts-patch";
 import assert from 'assert';
 import * as fs from "fs";
 
-
-
 export default function (
     program?: ts.Program,
     pluginConfig?: any,
     transformerExtras?: TransformerExtras,
 ) {
-    const repo_root = '/Users/jonathan/src/teflon/config/';
+    const repo_root = '/Users/jonathan/Library/Application Support/Lekko/Config Repositories/default/';
 
     return (context: ts.TransformationContext) => {
         let namespace: string | undefined;
