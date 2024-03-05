@@ -1,17 +1,19 @@
 /* eslint-disable */
-import * as ts from 'typescript';
-import { factory } from 'typescript';
+import assert from "assert";
+import fs from "fs";
+import os from 'os';
+import path from "path";
 import { TransformerExtras } from "ts-patch";
-import assert from 'assert';
-import * as fs from "fs";
-import * as os from "os";
+import ts from "typescript";
+import { factory } from "typescript";
 
 export default function (
     program?: ts.Program,
     pluginConfig?: any,
     transformerExtras?: TransformerExtras,
 ) {
-    const repo_root = os.homedir() + '/Library/Application Support/Lekko/Config Repositories/default/';
+    const repo_root = path.join(os.homedir(),
+        "Library/Application Support/Lekko/Config Repositories/default/");
 
     return (context: ts.TransformationContext) => {
         let namespace: string | undefined;
@@ -24,142 +26,184 @@ export default function (
                 assert(node.body);
                 assert(namespace);
                 const functionName = node.name.getFullText().trim();
-                const configName = functionName.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`).replace(/get-/, '');
+                const configName = functionName
+                    .replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)
+                    .replace(/get-/, "");
                 let getter: string | undefined = undefined;
-                // @ts-ignore
-                const type = program?.getTypeChecker().getPromisedTypeOfPromise(sig.getReturnType());
 
+                const type = program
+                    ?.getTypeChecker()
+                    // @ts-ignore
+                    .getPromisedTypeOfPromise(sig.getReturnType());
 
                 // @ts-ignore
                 const paramsAsBareObj = sig.parameters[0].valueDeclaration.getChildren()[0].getFullText();
 
-                // @ts-ignore
-                const storedConfig = JSON.parse(fs.readFileSync(repo_root + namespace + "/gen/json/" + configName + ".json"));
+                const storedConfig = JSON.parse(
+                    // @ts-ignore
+                    fs.readFileSync(repo_root + namespace + "/gen/json/" + configName + ".json"),
+                );
+
                 if (type.flags & ts.TypeFlags.String) {
                     getter = "getString";
-                }
-                else if (type.flags & ts.TypeFlags.Number) {
+                } else if (type.flags & ts.TypeFlags.Number) {
                     // TODO used storedConfig to handle float vs int
                     getter = "getFloat";
-                }
-                else if (type.flags & ts.TypeFlags.Boolean) {
+                } else if (type.flags & ts.TypeFlags.Boolean) {
                     getter = "getBool";
-                }
-                else if (type.flags & ts.TypeFlags.Object) {
-                    if (storedConfig.type === 'FEATURE_TYPE_JSON') {
-                        getter = "getJSON"
-                    } else if (storedConfig.type === 'FEATURE_TYPE_PROTO') {
-                        getter = "getProto"
+                } else if (type.flags & ts.TypeFlags.Object) {
+                    if (storedConfig.type === "FEATURE_TYPE_JSON") {
+                        getter = "getJSON";
+                    } else if (storedConfig.type === "FEATURE_TYPE_PROTO") {
+                        getter = "getProto";
                     } else {
                         throw new Error("Error");
                     }
                 }
                 if (getter === undefined) {
-                    throw new Error(`Unsupported TypeScript type: ${type.flags} - ${program?.getTypeChecker().typeToString(type)}`);
+                    throw new Error(
+                        `Unsupported TypeScript type: ${type.flags} - ${program?.getTypeChecker().typeToString(type)}`,
+                    );
                 }
                 if (getter === "getProto") {
                     const protoTypeParts = storedConfig.tree.default["@type"].split(".");
                     const protoType = protoTypeParts[protoTypeParts.length - 1];
-                    return [factory.createImportDeclaration(
-                        undefined,
-                        factory.createImportClause(
-                            false,
+                    return [
+                        factory.createImportDeclaration(
                             undefined,
-                            ts.factory.createNamespaceImport(ts.factory.createIdentifier("lekko_pb"))
+                            factory.createImportClause(
+                                false,
+                                undefined,
+                                ts.factory.createNamespaceImport(
+                                    ts.factory.createIdentifier("lekko_pb"),
+                                ),
+                            ),
+                            factory.createStringLiteral(
+                                `./gen/${namespace}/config/v1beta1/${namespace}_pb.js`,
+                            ),
+                            undefined,
                         ),
-                        factory.createStringLiteral(`./gen/${namespace}/config/v1beta1/${namespace}_pb.js`),
-                        undefined
-                    ),
-                    ts.factory.updateFunctionDeclaration(
-                        node,
-                        node.modifiers,
-                        node.asteriskToken,
-                        node.name,
-                        node.typeParameters,
-                        node.parameters,
-                        node.type,
-                        factory.createBlock(
-                            [factory.createTryStatement(
-                                factory.createBlock([
-                                    factory.createVariableStatement(
-                                        factory.createModifiersFromModifierFlags(
-                                            ts.ModifierFlags.Const,
-                                        ),
-                                        factory.createVariableDeclarationList(
+                        ts.factory.updateFunctionDeclaration(
+                            node,
+                            node.modifiers,
+                            node.asteriskToken,
+                            node.name,
+                            node.typeParameters,
+                            node.parameters,
+                            node.type,
+                            factory.createBlock(
+                                [
+                                    factory.createTryStatement(
+                                        factory.createBlock(
                                             [
-                                                factory.createVariableDeclaration(
-                                                    "config",
-                                                    undefined,
-                                                    undefined,
-                                                    factory.createNewExpression(
-                                                        factory.createPropertyAccessExpression(
-                                                            factory.createIdentifier("lekko_pb"),
-                                                            factory.createIdentifier(
-                                                                protoType,
+                                                factory.createVariableStatement(
+                                                    factory.createModifiersFromModifierFlags(
+                                                        ts.ModifierFlags.Const,
+                                                    ),
+                                                    factory.createVariableDeclarationList(
+                                                        [
+                                                            factory.createVariableDeclaration(
+                                                                "config",
+                                                                undefined,
+                                                                undefined,
+                                                                factory.createNewExpression(
+                                                                    factory.createPropertyAccessExpression(
+                                                                        factory.createIdentifier(
+                                                                            "lekko_pb",
+                                                                        ),
+                                                                        factory.createIdentifier(
+                                                                            protoType,
+                                                                        ),
+                                                                    ),
+                                                                    undefined,
+                                                                    [],
+                                                                ),
                                                             ),
-                                                        ),
-                                                        undefined,
-                                                        [],
+                                                        ],
+                                                        ts.NodeFlags.Const,
                                                     ),
                                                 ),
-                                            ],
-                                            ts.NodeFlags.Const,
-                                        ),
-                                    ),
-                                    factory.createExpressionStatement(factory.createCallExpression(
-                                        factory.createPropertyAccessExpression(
-                                            factory.createIdentifier("config"),
-                                            factory.createIdentifier("fromBinary")
-                                        ),
-                                        undefined,
-                                        [factory.createPropertyAccessExpression(
-                                            factory.createCallExpression(
-                                                factory.createPropertyAccessExpression(
-                                                    factory.createParenthesizedExpression(factory.createAwaitExpression(factory.createCallExpression(
-                                                        factory.createPropertyAccessExpression(
-                                                            factory.createIdentifier("lekko"),
-                                                            factory.createIdentifier("getClient")
-                                                        ),
-                                                        undefined,
-                                                        []
-                                                    ))),
-                                                    factory.createIdentifier("getProto")
-                                                ),
-                                                undefined,
-                                                [
-                                                    factory.createStringLiteral(namespace),
-                                                    factory.createStringLiteral(configName),
+                                                factory.createExpressionStatement(
                                                     factory.createCallExpression(
                                                         factory.createPropertyAccessExpression(
-                                                            factory.createPropertyAccessExpression(
-                                                                factory.createIdentifier("lekko"),
-                                                                factory.createIdentifier("ClientContext")
-                                                            ),
-                                                            factory.createIdentifier("fromJSON")
+                                                            factory.createIdentifier("config"),
+                                                            factory.createIdentifier("fromBinary"),
                                                         ),
                                                         undefined,
-                                                        [factory.createIdentifier(paramsAsBareObj)]
-                                                    )
-                                                ]
-                                            ),
-                                            factory.createIdentifier("value")
-                                        )]
-                                    )),
-                                    factory.createReturnStatement(factory.createIdentifier("config"))
-                                ], true
-                                ),
-                                factory.createCatchClause(
-                                    undefined,
-                                    node.body
-                                ),
-                                undefined
-                            )],
-                            true
-                        )
-
-                    )
+                                                        [
+                                                            factory.createPropertyAccessExpression(
+                                                                factory.createCallExpression(
+                                                                    factory.createPropertyAccessExpression(
+                                                                        factory.createParenthesizedExpression(
+                                                                            factory.createAwaitExpression(
+                                                                                factory.createCallExpression(
+                                                                                    factory.createPropertyAccessExpression(
+                                                                                        factory.createIdentifier(
+                                                                                            "lekko",
+                                                                                        ),
+                                                                                        factory.createIdentifier(
+                                                                                            "getClient",
+                                                                                        ),
+                                                                                    ),
+                                                                                    undefined,
+                                                                                    [],
+                                                                                ),
+                                                                            ),
+                                                                        ),
+                                                                        factory.createIdentifier(
+                                                                            "getProto",
+                                                                        ),
+                                                                    ),
+                                                                    undefined,
+                                                                    [
+                                                                        factory.createStringLiteral(
+                                                                            namespace,
+                                                                        ),
+                                                                        factory.createStringLiteral(
+                                                                            configName,
+                                                                        ),
+                                                                        factory.createCallExpression(
+                                                                            factory.createPropertyAccessExpression(
+                                                                                factory.createPropertyAccessExpression(
+                                                                                    factory.createIdentifier(
+                                                                                        "lekko",
+                                                                                    ),
+                                                                                    factory.createIdentifier(
+                                                                                        "ClientContext",
+                                                                                    ),
+                                                                                ),
+                                                                                factory.createIdentifier(
+                                                                                    "fromJSON",
+                                                                                ),
+                                                                            ),
+                                                                            undefined,
+                                                                            [
+                                                                                factory.createIdentifier(
+                                                                                    paramsAsBareObj,
+                                                                                ),
+                                                                            ],
+                                                                        ),
+                                                                    ],
+                                                                ),
+                                                                factory.createIdentifier("value"),
+                                                            ),
+                                                        ],
+                                                    ),
+                                                ),
+                                                factory.createReturnStatement(
+                                                    factory.createIdentifier("config"),
+                                                ),
+                                            ],
+                                            true,
+                                        ),
+                                        factory.createCatchClause(undefined, node.body),
+                                        undefined,
+                                    ),
+                                ],
+                                true,
+                            ),
+                        ),
                     ];
-
                 }
                 return ts.factory.updateFunctionDeclaration(
                     node,
@@ -170,58 +214,80 @@ export default function (
                     node.parameters,
                     node.type,
                     factory.createBlock(
-                        [factory.createTryStatement(
-                            factory.createBlock(
-                                [
-                                    factory.createExpressionStatement(factory.createAwaitExpression(factory.createCallExpression( // TODO -- this should be top level.. but ts module build shit is horrible
-                                        factory.createPropertyAccessExpression(
-                                            factory.createIdentifier("lekko"),
-                                            factory.createIdentifier("setupClient")
-                                        ),
-                                        undefined,
-                                        []
-                                    ))),
-                                    factory.createReturnStatement(factory.createAwaitExpression(factory.createCallExpression(
-                                        factory.createPropertyAccessExpression(
-                                            factory.createParenthesizedExpression(factory.createAwaitExpression(factory.createCallExpression(
-                                                factory.createPropertyAccessExpression(
-                                                    factory.createIdentifier("lekko"),
-                                                    factory.createIdentifier("getClient")
-                                                ),
-                                                undefined,
-                                                []
-                                            ))),
-                                            factory.createIdentifier(getter)
-                                        ),
-                                        undefined,
-                                        [
-                                            factory.createStringLiteral(namespace),
-                                            factory.createStringLiteral(configName),
-                                            factory.createCallExpression(
-                                                factory.createPropertyAccessExpression(
+                        [
+                            factory.createTryStatement(
+                                factory.createBlock(
+                                    [
+                                        factory.createExpressionStatement(
+                                            factory.createAwaitExpression(
+                                                factory.createCallExpression(
+                                                    // TODO -- this should be top level.. but ts module build shit is horrible
                                                     factory.createPropertyAccessExpression(
                                                         factory.createIdentifier("lekko"),
-                                                        factory.createIdentifier("ClientContext")
+                                                        factory.createIdentifier("setupClient"),
                                                     ),
-                                                    factory.createIdentifier("fromJSON")
+                                                    undefined,
+                                                    [],
                                                 ),
-                                                undefined,
-                                                [factory.createIdentifier(paramsAsBareObj)]
-                                            )
-                                        ]
-                                    )))],
-                                true
-                            ),
-                            factory.createCatchClause(
+                                            ),
+                                        ),
+                                        factory.createReturnStatement(
+                                            factory.createAwaitExpression(
+                                                factory.createCallExpression(
+                                                    factory.createPropertyAccessExpression(
+                                                        factory.createParenthesizedExpression(
+                                                            factory.createAwaitExpression(
+                                                                factory.createCallExpression(
+                                                                    factory.createPropertyAccessExpression(
+                                                                        factory.createIdentifier(
+                                                                            "lekko",
+                                                                        ),
+                                                                        factory.createIdentifier(
+                                                                            "getClient",
+                                                                        ),
+                                                                    ),
+                                                                    undefined,
+                                                                    [],
+                                                                ),
+                                                            ),
+                                                        ),
+                                                        factory.createIdentifier(getter),
+                                                    ),
+                                                    undefined,
+                                                    [
+                                                        factory.createStringLiteral(namespace),
+                                                        factory.createStringLiteral(configName),
+                                                        factory.createCallExpression(
+                                                            factory.createPropertyAccessExpression(
+                                                                factory.createPropertyAccessExpression(
+                                                                    factory.createIdentifier(
+                                                                        "lekko",
+                                                                    ),
+                                                                    factory.createIdentifier(
+                                                                        "ClientContext",
+                                                                    ),
+                                                                ),
+                                                                factory.createIdentifier(
+                                                                    "fromJSON",
+                                                                ),
+                                                            ),
+                                                            undefined,
+                                                            [factory.createIdentifier(paramsAsBareObj)],
+                                                        ),
+                                                    ],
+                                                ),
+                                            ),
+                                        ),
+                                    ],
+                                    true,
+                                ),
+                                factory.createCatchClause(undefined, node.body),
                                 undefined,
-                                node.body
                             ),
-                            undefined
-                        )],
-                        true
-                    )
-
-                )
+                        ],
+                        true,
+                    ),
+                );
             }
             return node;
         }
@@ -236,15 +302,15 @@ export default function (
                         ts.factory.createImportClause(
                             false,
                             undefined,
-                            ts.factory.createNamespaceImport(ts.factory.createIdentifier("lekko"))
+                            ts.factory.createNamespaceImport(ts.factory.createIdentifier("lekko")),
                         ),
                         ts.factory.createStringLiteral("@lekko/node-server-sdk"),
-                        undefined
+                        undefined,
                     );
                     return ts.factory.updateSourceFile(node, [
                         importDeclaration,
                         // @ts-ignore
-                        ...ts.visitNodes(node.statements, injectMagic)
+                        ...ts.visitNodes(node.statements, injectMagic),
                     ]);
                 }
             }
