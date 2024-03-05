@@ -413,7 +413,7 @@ program
     .option(
         "-r, --repo-path <string>",
         "path to the config repo",
-        "/Users/sergey/Library/Application Support/Lekko/Config Repositories/default",
+        path.join(os.homedir(), "Library/Application Support/Lekko/Config Repositories/default/"),
     )
     .option("-f, --filename <string>", "ts file to convert to Lekko");
 program.parse();
