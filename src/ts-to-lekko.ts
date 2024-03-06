@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env ts-node
 /* eslint-disable no-case-declarations */
 import assert from "assert";
 import { spawnSync } from "child_process";
@@ -13,11 +13,7 @@ import ts, { TypeChecker } from "typescript";
 
 /*
     TODOs
-    * Hook the proto stuff into buf's stuff
-    * Make proto rulelang stuff work for real (import and correctly format the message)
-    * Correctly parse the binaryExpressions to validate property and convert to the correct operators
     * rewrite the code to be /less/ vomit inducing
-    * wrapper meta-programming code to use it as a static fallback
     * command line args
 
     Stretch:
@@ -221,7 +217,6 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
                 // @ts-ignore
                 if (promiseType.objectFlags & ts.ObjectFlags.Reference) {
                     const referenceType = promiseType as ts.TypeReference;
-                    // @ts-ignore
                     returnType = referenceType.resolvedTypeArguments?.find(() => true);
                 } else {
                     returnType = promiseType.aliasTypeArguments?.find(() => true);
@@ -423,7 +418,7 @@ program
         "path to the config repo",
         path.join(os.homedir(), "Library/Application Support/Lekko/Config Repositories/default/"),
     )
-    .option("-f, --filename <string>", "ts file to convert to Lekko");
+    .requiredOption("-f, --filename <string>", "ts file to convert to Lekko");
 program.parse();
 const options = program.opts();
 
