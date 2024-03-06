@@ -268,7 +268,7 @@ export default function (
                                 factory.createTryStatement(
                                     factory.createBlock(
                                         [
-                                            factory.createExpressionStatement(
+                                            pluginConfig["noStatic"] ? factory.createEmptyStatement(): factory.createExpressionStatement(
                                                 factory.createAwaitExpression(
                                                     factory.createCallExpression(
                                                         // TODO -- this should be top level.. but ts module build shit is horrible
