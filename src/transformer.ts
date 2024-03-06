@@ -89,7 +89,14 @@ export default function (
                             node.asteriskToken,
                             node.name,
                             node.typeParameters,
-                            node.parameters,
+                            pluginConfig["noStatic"] ? [...node.parameters,       factory.createParameterDeclaration(
+                                undefined,
+                                undefined,
+                                factory.createIdentifier("client"),
+                                undefined,
+                                undefined,
+                                undefined
+                              )] : node.parameters,
                             node.type,
                             factory.createBlock(
                                 [
@@ -134,6 +141,9 @@ export default function (
                                                             factory.createPropertyAccessExpression(
                                                                 factory.createCallExpression(
                                                                     factory.createPropertyAccessExpression(
+                                                                        pluginConfig["noStatic"] ? factory.createIdentifier(
+                                                                            "client",
+                                                                        ) :
                                                                         factory.createParenthesizedExpression(
                                                                             factory.createAwaitExpression(
                                                                                 factory.createCallExpression(
@@ -196,98 +206,173 @@ export default function (
                                             ],
                                             true,
                                         ),
-                                        factory.createCatchClause(undefined, node.body),
+                                        factory.createCatchClause(factory.createVariableDeclaration(
+                                            factory.createIdentifier("e"),
+                                            undefined,
+                                            undefined,
+                                            undefined
+                                        ), pluginConfig["noStatic"] ? factory.createBlock(
+                                            [factory.createThrowStatement(factory.createIdentifier("e"))],
+                                            true
+                                        ) : node.body),
                                         undefined,
                                     ),
                                 ],
                                 true,
                             ),
                         ),
+                        factory.createExpressionStatement(factory.createBinaryExpression(
+                            factory.createPropertyAccessExpression(
+                                node.name,
+                                factory.createIdentifier("_namespaceName")
+                            ),
+                            factory.createToken(ts.SyntaxKind.EqualsToken),
+                            factory.createStringLiteral(namespace)
+                        )),
+                        factory.createExpressionStatement(factory.createBinaryExpression(
+                            factory.createPropertyAccessExpression(
+                                node.name,
+                                factory.createIdentifier("_configName")
+                            ),
+                            factory.createToken(ts.SyntaxKind.EqualsToken),
+                            factory.createStringLiteral(configName)
+                        )),
+                        factory.createExpressionStatement(factory.createBinaryExpression(
+                            factory.createPropertyAccessExpression(
+                                node.name,
+                                factory.createIdentifier("_evaluationType")
+                            ),
+                            factory.createToken(ts.SyntaxKind.EqualsToken),
+                            factory.createStringLiteral(storedConfig.type)
+                        )),
                     ];
                 }
-                return ts.factory.updateFunctionDeclaration(
-                    node,
-                    node.modifiers,
-                    node.asteriskToken,
-                    node.name,
-                    node.typeParameters,
-                    node.parameters,
-                    node.type,
-                    factory.createBlock(
-                        [
-                            factory.createTryStatement(
-                                factory.createBlock(
-                                    [
-                                        factory.createExpressionStatement(
-                                            factory.createAwaitExpression(
-                                                factory.createCallExpression(
-                                                    // TODO -- this should be top level.. but ts module build shit is horrible
-                                                    factory.createPropertyAccessExpression(
-                                                        factory.createIdentifier("lekko"),
-                                                        factory.createIdentifier("setupClient"),
+                return [
+                    ts.factory.updateFunctionDeclaration(
+                        node,
+                        node.modifiers,
+                        node.asteriskToken,
+                        node.name,
+                        node.typeParameters,
+                        pluginConfig["noStatic"] ? [...node.parameters,       factory.createParameterDeclaration(
+                            undefined,
+                            undefined,
+                            factory.createIdentifier("client"),
+                            undefined,
+                            undefined,
+                            undefined
+                          )] : node.parameters,
+                        node.type,
+                        factory.createBlock(
+                            [
+                                factory.createTryStatement(
+                                    factory.createBlock(
+                                        [
+                                            factory.createExpressionStatement(
+                                                factory.createAwaitExpression(
+                                                    factory.createCallExpression(
+                                                        // TODO -- this should be top level.. but ts module build shit is horrible
+                                                        factory.createPropertyAccessExpression(
+                                                            factory.createIdentifier("lekko"),
+                                                            factory.createIdentifier("setupClient"),
+                                                        ),
+                                                        undefined,
+                                                        [],
                                                     ),
-                                                    undefined,
-                                                    [],
                                                 ),
                                             ),
-                                        ),
-                                        factory.createReturnStatement(
-                                            factory.createAwaitExpression(
-                                                factory.createCallExpression(
-                                                    factory.createPropertyAccessExpression(
-                                                        factory.createParenthesizedExpression(
-                                                            factory.createAwaitExpression(
-                                                                factory.createCallExpression(
+                                            factory.createReturnStatement(
+                                                factory.createAwaitExpression(
+                                                    factory.createCallExpression(
+                                                        factory.createPropertyAccessExpression(
+                                                            pluginConfig["noStatic"] ? factory.createIdentifier(
+                                                                "client",
+                                                            ) :
+                                                            factory.createParenthesizedExpression(
+                                                                factory.createAwaitExpression(
+                                                                    factory.createCallExpression(
+                                                                        factory.createPropertyAccessExpression(
+                                                                            factory.createIdentifier(
+                                                                                "lekko",
+                                                                            ),
+                                                                            factory.createIdentifier(
+                                                                                "getClient",
+                                                                            ),
+                                                                        ),
+                                                                        undefined,
+                                                                        [],
+                                                                    ),
+                                                                ),
+                                                            ),
+                                                            factory.createIdentifier(getter),
+                                                        ),
+                                                        undefined,
+                                                        [
+                                                            factory.createStringLiteral(namespace),
+                                                            factory.createStringLiteral(configName),
+                                                            factory.createCallExpression(
+                                                                factory.createPropertyAccessExpression(
                                                                     factory.createPropertyAccessExpression(
                                                                         factory.createIdentifier(
                                                                             "lekko",
                                                                         ),
                                                                         factory.createIdentifier(
-                                                                            "getClient",
+                                                                            "ClientContext",
                                                                         ),
                                                                     ),
-                                                                    undefined,
-                                                                    [],
+                                                                    factory.createIdentifier(
+                                                                        "fromJSON",
+                                                                    ),
                                                                 ),
+                                                                undefined,
+                                                                [factory.createIdentifier(paramsAsBareObj)],
                                                             ),
-                                                        ),
-                                                        factory.createIdentifier(getter),
+                                                        ],
                                                     ),
-                                                    undefined,
-                                                    [
-                                                        factory.createStringLiteral(namespace),
-                                                        factory.createStringLiteral(configName),
-                                                        factory.createCallExpression(
-                                                            factory.createPropertyAccessExpression(
-                                                                factory.createPropertyAccessExpression(
-                                                                    factory.createIdentifier(
-                                                                        "lekko",
-                                                                    ),
-                                                                    factory.createIdentifier(
-                                                                        "ClientContext",
-                                                                    ),
-                                                                ),
-                                                                factory.createIdentifier(
-                                                                    "fromJSON",
-                                                                ),
-                                                            ),
-                                                            undefined,
-                                                            [factory.createIdentifier(paramsAsBareObj)],
-                                                        ),
-                                                    ],
                                                 ),
                                             ),
-                                        ),
-                                    ],
-                                    true,
+                                        ],
+                                        true,
+                                    ),
+                                    factory.createCatchClause(factory.createVariableDeclaration(
+                                        factory.createIdentifier("e"),
+                                        undefined,
+                                        undefined,
+                                        undefined
+                                    ), pluginConfig["noStatic"] ? factory.createBlock(
+                                        [factory.createThrowStatement(factory.createIdentifier("e"))],
+                                        true
+                                    ) : node.body),
+                                    undefined,
                                 ),
-                                factory.createCatchClause(undefined, node.body),
-                                undefined,
-                            ),
-                        ],
-                        true,
+                            ],
+                            true,
+                        ),
                     ),
-                );
+                    factory.createExpressionStatement(factory.createBinaryExpression(
+                        factory.createPropertyAccessExpression(
+                            node.name,
+                            factory.createIdentifier("_namespaceName")
+                        ),
+                        factory.createToken(ts.SyntaxKind.EqualsToken),
+                        factory.createStringLiteral(namespace)
+                    )),
+                    factory.createExpressionStatement(factory.createBinaryExpression(
+                        factory.createPropertyAccessExpression(
+                            node.name,
+                            factory.createIdentifier("_configName")
+                        ),
+                        factory.createToken(ts.SyntaxKind.EqualsToken),
+                        factory.createStringLiteral(configName)
+                    )),
+                    factory.createExpressionStatement(factory.createBinaryExpression(
+                        factory.createPropertyAccessExpression(
+                            node.name,
+                            factory.createIdentifier("_evaluationType")
+                        ),
+                        factory.createToken(ts.SyntaxKind.EqualsToken),
+                        factory.createStringLiteral(storedConfig.type)
+                    ))];
             }
             return node;
         }
@@ -304,7 +389,7 @@ export default function (
                             undefined,
                             ts.factory.createNamespaceImport(ts.factory.createIdentifier("lekko")),
                         ),
-                        ts.factory.createStringLiteral("@lekko/node-server-sdk"),
+                        ts.factory.createStringLiteral(pluginConfig["noStatic"] ? "@lekko/js-sdk" : "@lekko/node-server-sdk"),
                         undefined,
                     );
                     return ts.factory.updateSourceFile(node, [
