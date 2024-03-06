@@ -17,7 +17,7 @@ export default function (
     if (pluginConfig["repoPath"] !== undefined) {
         repo_root = pluginConfig["repoPath"]
     }
-
+    
     return (context: ts.TransformationContext) => {
         let namespace: string | undefined;
 
@@ -109,9 +109,7 @@ export default function (
                                         factory.createBlock(
                                             [
                                                 factory.createVariableStatement(
-                                                    factory.createModifiersFromModifierFlags(
-                                                        ts.ModifierFlags.Const,
-                                                    ),
+                                                    undefined,
                                                     factory.createVariableDeclarationList(
                                                         [
                                                             factory.createVariableDeclaration(
