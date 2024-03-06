@@ -1,6 +1,8 @@
 import ts, { CompilerHost, CompilerOptions, Program, SourceFile } from 'typescript';
 import { PluginConfig, ProgramTransformerExtras } from "ts-patch";
 import { } from 'ts-expose-internals';
+import fs from "fs";
+import path from "node:path";
 //import transformer from './transformer';
 
 
@@ -68,9 +70,15 @@ export default function transformProgram(
     }
     */
 
-    /* Re-create Program instance */
-    // TODO - get all the protos
-    return tsInstance.createProgram(rootFileNames.concat([ './src/lekko/gen/default/config/v1beta1/default_pb.js']),
+    function getFilesInDir(dir: string): string[] {
+        return fs.readdirSync(dir, {withFileTypes: true}).flatMap((dirent) => 
+            dirent.isDirectory() ? getFilesInDir(path.join(dir, dirent.name)) : [path.join(dir, dirent.name)]
+        );
+    }
+
+    const protoBindings = getFilesInDir("./src/lekko/gen/");
+    
+    return tsInstance.createProgram(rootFileNames.concat(protoBindings),
         compilerOptions,
         compilerHost);
 }
