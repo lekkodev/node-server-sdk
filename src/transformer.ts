@@ -12,8 +12,11 @@ export default function (
     pluginConfig?: any,
     transformerExtras?: TransformerExtras,
 ) {
-    const repo_root = path.join(os.homedir(),
+    let repo_root = path.join(os.homedir(),
         "Library/Application Support/Lekko/Config Repositories/default/");
+    if (pluginConfig["repoPath"] !== undefined) {
+        repo_root = pluginConfig["repoPath"]
+    }
 
     return (context: ts.TransformationContext) => {
         let namespace: string | undefined;
@@ -41,7 +44,7 @@ export default function (
 
                 const storedConfig = JSON.parse(
                     // @ts-ignore
-                    fs.readFileSync(repo_root + namespace + "/gen/json/" + configName + ".json"),
+                    fs.readFileSync(path.join(repo_root, namespace, "/gen/json/", `${configName}.json`)),
                 );
 
                 if (type.flags & ts.TypeFlags.String) {
@@ -68,6 +71,8 @@ export default function (
                 if (getter === "getProto") {
                     const protoTypeParts = storedConfig.tree.default["@type"].split(".");
                     const protoType = protoTypeParts[protoTypeParts.length - 1];
+                    // For JS SDK the get calls need to be awaited
+                    const wrapAwait = (expr: ts.Expression) => pluginConfig["noStatic"] ? factory.createAwaitExpression(expr) : expr
                     return [
                         factory.createImportDeclaration(
                             undefined,
@@ -139,61 +144,63 @@ export default function (
                                                         undefined,
                                                         [
                                                             factory.createPropertyAccessExpression(
-                                                                factory.createCallExpression(
-                                                                    factory.createPropertyAccessExpression(
-                                                                        pluginConfig["noStatic"] ? factory.createIdentifier(
-                                                                            "client",
-                                                                        ) :
-                                                                        factory.createParenthesizedExpression(
-                                                                            factory.createAwaitExpression(
-                                                                                factory.createCallExpression(
+                                                                wrapAwait(
+                                                                    factory.createCallExpression(
+                                                                        factory.createPropertyAccessExpression(
+                                                                            pluginConfig["noStatic"] ? factory.createIdentifier(
+                                                                                "client",
+                                                                            ) :
+                                                                            factory.createParenthesizedExpression(
+                                                                                factory.createAwaitExpression(
+                                                                                    factory.createCallExpression(
+                                                                                        factory.createPropertyAccessExpression(
+                                                                                            factory.createIdentifier(
+                                                                                                "lekko",
+                                                                                            ),
+                                                                                            factory.createIdentifier(
+                                                                                                "getClient",
+                                                                                            ),
+                                                                                        ),
+                                                                                        undefined,
+                                                                                        [],
+                                                                                    ),
+                                                                                ),
+                                                                            ),
+                                                                            factory.createIdentifier(
+                                                                                "getProto",
+                                                                            ),
+                                                                        ),
+                                                                        undefined,
+                                                                        [
+                                                                            factory.createStringLiteral(
+                                                                                namespace,
+                                                                            ),
+                                                                            factory.createStringLiteral(
+                                                                                configName,
+                                                                            ),
+                                                                            factory.createCallExpression(
+                                                                                factory.createPropertyAccessExpression(
                                                                                     factory.createPropertyAccessExpression(
                                                                                         factory.createIdentifier(
                                                                                             "lekko",
                                                                                         ),
                                                                                         factory.createIdentifier(
-                                                                                            "getClient",
+                                                                                            "ClientContext",
                                                                                         ),
                                                                                     ),
-                                                                                    undefined,
-                                                                                    [],
+                                                                                    factory.createIdentifier(
+                                                                                        "fromJSON",
+                                                                                    ),
                                                                                 ),
+                                                                                undefined,
+                                                                                [
+                                                                                    factory.createIdentifier(
+                                                                                        paramsAsBareObj,
+                                                                                    ),
+                                                                                ],
                                                                             ),
-                                                                        ),
-                                                                        factory.createIdentifier(
-                                                                            "getProto",
-                                                                        ),
+                                                                        ],
                                                                     ),
-                                                                    undefined,
-                                                                    [
-                                                                        factory.createStringLiteral(
-                                                                            namespace,
-                                                                        ),
-                                                                        factory.createStringLiteral(
-                                                                            configName,
-                                                                        ),
-                                                                        factory.createCallExpression(
-                                                                            factory.createPropertyAccessExpression(
-                                                                                factory.createPropertyAccessExpression(
-                                                                                    factory.createIdentifier(
-                                                                                        "lekko",
-                                                                                    ),
-                                                                                    factory.createIdentifier(
-                                                                                        "ClientContext",
-                                                                                    ),
-                                                                                ),
-                                                                                factory.createIdentifier(
-                                                                                    "fromJSON",
-                                                                                ),
-                                                                            ),
-                                                                            undefined,
-                                                                            [
-                                                                                factory.createIdentifier(
-                                                                                    paramsAsBareObj,
-                                                                                ),
-                                                                            ],
-                                                                        ),
-                                                                    ],
                                                                 ),
                                                                 factory.createIdentifier("value"),
                                                             ),

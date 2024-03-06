@@ -466,7 +466,7 @@ const bufGenTemplate = JSON.stringify({
         {
             plugin: "buf.build/bufbuild/es:v1.7.2",
             out: "gen",
-            opt: ["js_import_style=legacy_commonjs"],
+            opt: ["target=ts"],
         },
     ],
 });
