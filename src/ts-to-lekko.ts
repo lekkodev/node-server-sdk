@@ -217,6 +217,7 @@ function convertSourceFile(sourceFile: ts.SourceFile, checker: TypeChecker) {
                 // @ts-ignore
                 if (promiseType.objectFlags & ts.ObjectFlags.Reference) {
                     const referenceType = promiseType as ts.TypeReference;
+                    // @ts-ignore
                     returnType = referenceType.resolvedTypeArguments?.find(() => true);
                 } else {
                     returnType = promiseType.aliasTypeArguments?.find(() => true);
