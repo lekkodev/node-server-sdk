@@ -428,6 +428,11 @@ const filename = String(options.filename);
 const namespace = path.basename(filename, path.extname(filename));
 const parentDir = path.dirname(filename);
 
+const defaultInit = spawnSync("lekko", ["repo", "init-default"], { encoding: "utf-8" });
+if (defaultInit.error !== undefined || defaultInit.status !== 0) {
+  throw new Error("Failed to initialize default Lekko repo.");
+}
+
 const tsProgram = ts.createProgram([filename], {
     target: ts.ScriptTarget.ES2022,
 });
