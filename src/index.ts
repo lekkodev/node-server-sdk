@@ -70,6 +70,7 @@ async function initCachedAPIClient(options: BackendOptions): Promise<Client> {
     options.serverPort,
   );
   await client.initialize();
+  _global.lekkoClient ||= client;
   return client;
 }
 
@@ -107,6 +108,7 @@ async function initCachedGitClient(options: GitOptions): Promise<Client> {
     options.serverPort,
   );
   await client.initialize();
+  _global.lekkoClient ||= client;
   return client;
 }
 
@@ -150,6 +152,7 @@ async function initClient(options?: LocalOptions | BackendOptions): Promise<Clie
       options.serverPort,
     );
     await client.initialize();
+    _global.lekkoClient ||= client;
     return client;
   } else {
     let path = "";
@@ -178,6 +181,7 @@ async function initClient(options?: LocalOptions | BackendOptions): Promise<Clie
       createMissing,
     );
     await client.initialize();
+    _global.lekkoClient ||= client;
     return client;
   }
 }

@@ -3,24 +3,24 @@ import { ClientContext } from "../context/context";
 import { ListContentsResponse } from '../gen/lekko/server/v1beta1/sdk_pb';
 
 export interface AsyncClient {
-    getBool(namespace: string, key: string, ctx?: ClientContext): Promise<boolean>;
-    getInt(namespace: string, key: string, ctx?: ClientContext): Promise<bigint>;
-    getFloat(namespace: string, key: string, ctx?: ClientContext): Promise<number>;
-    getString(namespace: string, key: string, ctx?: ClientContext): Promise<string>
+    getBool(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): Promise<boolean>;
+    getInt(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): Promise<bigint>;
+    getFloat(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): Promise<number>;
+    getString(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): Promise<string>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getJSON(namespace: string, key: string, ctx?: ClientContext): Promise<any>;
-    getProto(namespace: string, key: string, ctx?: ClientContext): Promise<Any>;
+    getJSON(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): Promise<any>;
+    getProto(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): Promise<Any>;
     close(): Promise<void>;
 }
 
 export interface Client {
-  getBool(namespace: string, key: string, ctx?: ClientContext): boolean;
-  getInt(namespace: string, key: string, ctx?: ClientContext): bigint;
-  getFloat(namespace: string, key: string, ctx?: ClientContext): number;
-  getString(namespace: string, key: string, ctx?: ClientContext): string;
+  getBool(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): boolean;
+  getInt(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): bigint;
+  getFloat(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): number;
+  getString(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getJSON(namespace: string, key: string, ctx?: ClientContext): any;
-  getProto(namespace: string, key: string, ctx?: ClientContext): Any;
+  getJSON(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): any;
+  getProto(namespace: string, key: string, ctx?: ClientContext | { [key: string]: string | number | boolean }): Any;
   close(): Promise<void>;
 }
 
