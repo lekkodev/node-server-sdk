@@ -24,7 +24,8 @@ function initAPIClient(options: APIOptions): AsyncClient {
       protocol: options.transportProtocol ?? TransportProtocol.HTTP,
       apiKey: options.apiKey
     }).build();
-  return new TransportClient(options.repositoryOwner, options.repositoryName, transport);
+  const client =  new TransportClient(options.repositoryOwner, options.repositoryName, transport);
+  return client;
 }
 
 type SidecarOptions = {
@@ -40,7 +41,8 @@ function initSidecarClient(options: SidecarOptions): AsyncClient {
       hostname: options.hostname ?? "http://localhost:50051",
       protocol: options.transportProtocol ?? TransportProtocol.gRPC,
     }).build();
-  return new TransportClient(options.repositoryOwner, options.repositoryName, transport);
+  const client = new TransportClient(options.repositoryOwner, options.repositoryName, transport);
+  return client;
 }
 
 type BackendOptions = {
@@ -70,6 +72,7 @@ async function initCachedAPIClient(options: BackendOptions): Promise<Client> {
     options.serverPort,
   );
   await client.initialize();
+  _global.lekkoClient ||= client;
   return client;
 }
 
@@ -107,6 +110,7 @@ async function initCachedGitClient(options: GitOptions): Promise<Client> {
     options.serverPort,
   );
   await client.initialize();
+  _global.lekkoClient ||= client;
   return client;
 }
 
@@ -150,6 +154,7 @@ async function initClient(options?: LocalOptions | BackendOptions): Promise<Clie
       options.serverPort,
     );
     await client.initialize();
+    _global.lekkoClient ||= client;
     return client;
   } else {
     let path = "";
@@ -178,6 +183,7 @@ async function initClient(options?: LocalOptions | BackendOptions): Promise<Clie
       createMissing,
     );
     await client.initialize();
+    _global.lekkoClient ||= client;
     return client;
   }
 }
