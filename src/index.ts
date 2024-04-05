@@ -24,8 +24,7 @@ function initAPIClient(options: APIOptions): AsyncClient {
       protocol: options.transportProtocol ?? TransportProtocol.HTTP,
       apiKey: options.apiKey
     }).build();
-  const client =  new TransportClient(options.repositoryOwner, options.repositoryName, transport);
-  return client;
+  return new TransportClient(options.repositoryOwner, options.repositoryName, transport);
 }
 
 type SidecarOptions = {
@@ -41,8 +40,7 @@ function initSidecarClient(options: SidecarOptions): AsyncClient {
       hostname: options.hostname ?? "http://localhost:50051",
       protocol: options.transportProtocol ?? TransportProtocol.gRPC,
     }).build();
-  const client = new TransportClient(options.repositoryOwner, options.repositoryName, transport);
-  return client;
+  return new TransportClient(options.repositoryOwner, options.repositoryName, transport);
 }
 
 type BackendOptions = {

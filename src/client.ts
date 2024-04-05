@@ -92,11 +92,11 @@ export class TransportClient implements AsyncClient {
         return res.value;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async getJSON(
         namespace: string,
         key: string,
         ctx?: ClientContext | { [key: string]: string | number | boolean },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): Promise<any> {
         if (!ctx) {
             ctx = new ClientContext();
